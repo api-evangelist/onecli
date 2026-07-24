@@ -1,0 +1,254 @@
+openapi: 3.1.0
+info:
+  title: OneCLI Agent Setup Organization Partner API
+  version: '1.0'
+  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
+
+
+    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
+
+
+    ## Authentication
+
+
+    All endpoints require authentication via one of:
+
+
+    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
+
+    - **Session** — Cookie-based session from the web dashboard.
+
+
+    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
+
+    '
+servers:
+- url: https://api.onecli.sh/v1
+  description: OneCLI Cloud
+- url: http://localhost:10254/v1
+  description: Self-hosted (Docker)
+security:
+- bearerAuth: []
+tags:
+- name: Organization Partner
+  description: Inspect and detach an organization's partner relationship. Cloud only.
+paths:
+  /org/partner/inherited-secrets:
+    get:
+      operationId: listInheritedPartnerSecrets
+      summary: List inherited partner secrets
+      description: Returns the partner-level secrets this organization inherits (read-only). Empty if the organization has no partner or has detached. Authenticate with your organization API key or session.
+      tags:
+      - Organization Partner
+      responses:
+        '200':
+          description: List of inherited secrets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Secret'
+  /org/partner/status:
+    get:
+      operationId: getPartnerStatus
+      summary: Get partner status
+      description: Returns whether this organization is managed by a partner and whether it has detached. Requires the admin or owner role.
+      tags:
+      - Organization Partner
+      responses:
+        '200':
+          description: Partner link status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerLinkStatus'
+  /org/partner/detach:
+    post:
+      operationId: detachFromPartner
+      summary: Detach from partner
+      description: Stops this organization from inheriting partner secrets while keeping its partner attribution. Requires the admin or owner role.
+      tags:
+      - Organization Partner
+      responses:
+        '200':
+          description: Detached
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Organization is not managed by a partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Insufficient permissions (requires admin role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    InjectionConfig:
+      nullable: true
+      description: 'How the gateway injects this secret into matching outbound requests (generic secrets only). Exactly one variant:
+
+
+        - **Header** — `{ "headerName": "Authorization", "valueFormat": "Bearer {value}" }`
+
+        - **Query parameter** — `{ "paramName": "key", "paramFormat": "{value}" }`
+
+        - **URL path template** — `{ "pathTemplate": "/bot{value}" }` (must start with `/` and contain `{value}` exactly once)
+
+        - **URL path regex** — `{ "pathRegex": "^/bot([^/]+)", "pathReplacement": "/bot{value}" }` (replacement must contain `{value}`)
+
+
+        Unknown or mixed keys are rejected.
+
+        '
+      oneOf:
+      - type: object
+        title: Header injection
+        required:
+        - headerName
+        properties:
+          headerName:
+            type: string
+            minLength: 1
+          valueFormat:
+            type: string
+            description: 'Value template; `{value}` is replaced with the secret (default: `{value}`).'
+        additionalProperties: false
+      - type: object
+        title: Query parameter injection
+        required:
+        - paramName
+        properties:
+          paramName:
+            type: string
+            minLength: 1
+          paramFormat:
+            type: string
+            description: 'Value template; `{value}` is replaced with the secret (default: `{value}`).'
+        additionalProperties: false
+      - type: object
+        title: URL path template injection
+        required:
+        - pathTemplate
+        properties:
+          pathTemplate:
+            type: string
+            description: Path with a `{value}` hole, e.g. `/bot{value}`. Must start with `/` and contain `{value}` exactly once.
+        additionalProperties: false
+      - type: object
+        title: URL path regex injection
+        required:
+        - pathRegex
+        - pathReplacement
+        properties:
+          pathRegex:
+            type: string
+            description: Regular expression matched against the request path.
+          pathReplacement:
+            type: string
+            description: Replacement with `$N` capture references and a `{value}` token for the secret.
+        additionalProperties: false
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
+    PartnerLinkStatus:
+      type: object
+      properties:
+        partnerManaged:
+          type: boolean
+          description: True if the organization was created by a partner.
+        detached:
+          type: boolean
+          description: True if the organization has detached from its partner.
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
+    Secret:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+          - anthropic
+          - openai
+          - generic
+        valueSource:
+          type: string
+          enum:
+          - inline
+          - onepassword
+          description: Where the secret value lives — stored encrypted (`inline`) or resolved from 1Password at request time (`onepassword`).
+        opRef:
+          type: string
+          nullable: true
+          description: 1Password secret reference (`op://vault/item/field`). Only set when `valueSource` is `onepassword`.
+        hostPattern:
+          type: string
+        pathPattern:
+          type: string
+          nullable: true
+        injectionConfig:
+          $ref: '#/components/schemas/InjectionConfig'
+        metadata:
+          type: object
+          nullable: true
+          description: Type-specific metadata (e.g. `authMode` for `anthropic`/`openai` secrets, 1Password display labels).
+        scope:
+          type: string
+          enum:
+          - project
+          - organization
+          description: Project lists include inherited organization secrets; use this to tell them apart.
+        typeLabel:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: API key obtained from the dashboard or `GET /user/api-key`

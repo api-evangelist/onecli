@@ -1,0 +1,476 @@
+openapi: 3.1.0
+info:
+  title: OneCLI Agent Setup Organization App Config API
+  version: '1.0'
+  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
+
+
+    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
+
+
+    ## Authentication
+
+
+    All endpoints require authentication via one of:
+
+
+    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
+
+    - **Session** — Cookie-based session from the web dashboard.
+
+
+    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
+
+    '
+servers:
+- url: https://api.onecli.sh/v1
+  description: OneCLI Cloud
+- url: http://localhost:10254/v1
+  description: Self-hosted (Docker)
+security:
+- bearerAuth: []
+tags:
+- name: Organization App Config
+  description: Connect apps (OAuth and direct credentials) and manage BYOC app configuration at the organization level. Available on OneCLI Cloud and self-hosted Enterprise.
+paths:
+  /org/apps/{provider}/authorize:
+    get:
+      operationId: authorizeOrgApp
+      summary: Start organization OAuth flow
+      description: 'Starts an OAuth flow that creates the connection at the organization level, shared by every project in the organization. Redirects to the app''s OAuth authorization page; the flow completes on the shared `/apps/{provider}/callback` endpoint, so no extra redirect URI registration is needed.
+
+
+        Typically opened in a browser. With an organization API key the target organization is derived from the key. Available on OneCLI Cloud and self-hosted Enterprise. Requires the admin or owner role.
+
+        '
+      tags:
+      - Organization App Config
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      - name: connectionId
+        in: query
+        schema:
+          type: string
+        description: Reconnect an existing organization connection instead of creating a new one
+      - name: org
+        in: query
+        schema:
+          type: string
+        description: Target organization ID when the caller belongs to several organizations. Defaults to the organization derived from the credentials.
+      responses:
+        '302':
+          description: Redirect to OAuth provider
+        '400':
+          description: Provider not available or not configured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Insufficient role or not a member of the target organization
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /org/apps/{provider}/connect:
+    post:
+      operationId: connectOrgApp
+      summary: Connect app at the organization level
+      description: Connects an app using direct credentials (API key, service account, etc.) at the organization level. The connection is shared by every project in the organization. Available on OneCLI Cloud and self-hosted Enterprise. Requires admin role.
+      tags:
+      - Organization App Config
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - fields
+              properties:
+                fields:
+                  type: object
+                  additionalProperties:
+                    type: string
+                  description: Credential fields required by the app
+                  example:
+                    apiKey: sk-...
+                connectionId:
+                  type: string
+                  description: Reconnect an existing connection
+                label:
+                  type: string
+                  description: Display label for the connection. Defaults to a label derived from the credential metadata.
+                method:
+                  type: string
+                  description: Connection method to use for apps with multiple methods (e.g. OAuth primary + API-key alternate). An unrecognized value is rejected.
+      responses:
+        '200':
+          description: Connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Validation error or provider not available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Insufficient role or not a member of the organization
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /org/apps/configured:
+    get:
+      operationId: listOrgConfiguredProviders
+      summary: List configured providers
+      description: Returns provider IDs with an enabled app configuration at the organization level. Available on OneCLI Cloud and self-hosted Enterprise. Requires the admin or owner role.
+      tags:
+      - Organization App Config
+      responses:
+        '200':
+          description: List of configured provider IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /org/apps/{provider}/config:
+    get:
+      operationId: getOrgAppConfig
+      summary: Get organization app configuration
+      description: Returns the non-secret configuration for a BYOC app at the organization level. Available on OneCLI Cloud and self-hosted Enterprise. Requires the admin or owner role.
+      tags:
+      - Organization App Config
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      responses:
+        '200':
+          description: App configuration
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  settings:
+                    type: object
+                    additionalProperties:
+                      type: string
+                  hasCredentials:
+                    type: boolean
+                  enabled:
+                    type: boolean
+    post:
+      operationId: upsertOrgAppConfig
+      summary: Set organization app configuration
+      description: 'Creates or updates the BYOC configuration for an app at the organization level. The accepted field names are defined per app (e.g. `clientId`/`clientSecret` for OAuth apps); unknown keys are stripped. Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise.
+
+        '
+      tags:
+      - Organization App Config
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: string
+              description: Credential fields as defined by the app's configuration schema.
+              example:
+                clientId: 1234567890.apps.googleusercontent.com
+                clientSecret: GOCSPX-…
+      responses:
+        '201':
+          description: Configuration saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Provider does not support configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteOrgAppConfig
+      summary: Delete organization app configuration
+      description: Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise.
+      tags:
+      - Organization App Config
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      responses:
+        '204':
+          description: Configuration deleted
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Configuration not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /org/apps/{provider}/config/toggle:
+    patch:
+      operationId: toggleOrgAppConfig
+      summary: Toggle organization app configuration
+      description: Enables or disables an organization app configuration. Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise.
+      tags:
+      - Organization App Config
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - enabled
+              properties:
+                enabled:
+                  type: boolean
+      responses:
+        '200':
+          description: Configuration toggled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Configuration not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /org/apps/{provider}/blocklist:
+    get:
+      operationId: getOrgBlocklist
+      summary: Get organization blocklist state
+      description: Returns the blocklist state for a provider at the organization level. Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise.
+      tags:
+      - Organization App Config
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      responses:
+        '200':
+          description: Blocklist state
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BlocklistHostState'
+        '404':
+          description: Unknown provider
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: addOrgBlocklistEntry
+      summary: Activate or add an organization blocklist entry
+      description: 'Provide either `{ hostId }` to activate a predefined blocklist host, or `{ name, hostPattern }` to add a custom rule — at the organization level. Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise.
+
+        '
+      tags:
+      - Organization App Config
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - type: object
+                title: Activate predefined host
+                required:
+                - hostId
+                properties:
+                  hostId:
+                    type: string
+              - type: object
+                title: Add custom rule
+                required:
+                - name
+                - hostPattern
+                properties:
+                  name:
+                    type: string
+                  hostPattern:
+                    type: string
+      responses:
+        '201':
+          description: Blocklist entry created or activated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlocklistHostState'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /org/apps/{provider}/blocklist/{ruleId}:
+    patch:
+      operationId: toggleOrgBlocklistRule
+      summary: Toggle an organization blocklist rule
+      description: Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise.
+      tags:
+      - Organization App Config
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      - $ref: '#/components/parameters/blocklistRuleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - enabled
+              properties:
+                enabled:
+                  type: boolean
+      responses:
+        '200':
+          description: Rule toggled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+    delete:
+      operationId: removeOrgBlocklistRule
+      summary: Remove an organization blocklist rule
+      description: Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise.
+      tags:
+      - Organization App Config
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      - $ref: '#/components/parameters/blocklistRuleId'
+      responses:
+        '204':
+          description: Rule removed
+components:
+  parameters:
+    blocklistRuleId:
+      name: ruleId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Blocklist rule ID (from the blocklist state's `ruleId` field)
+    provider:
+      name: provider
+      in: path
+      required: true
+      schema:
+        type: string
+      description: App provider identifier (e.g., `gmail`, `github`, `jira`)
+  schemas:
+    BlocklistHostState:
+      type: object
+      description: State of one blocklist entry — a predefined host or a custom rule.
+      properties:
+        hostId:
+          type: string
+        ruleId:
+          type: string
+          nullable: true
+          description: The backing rule ID, or null when a predefined host has never been activated.
+        enabled:
+          type: boolean
+        custom:
+          type: boolean
+          description: True for custom rules, false for the app's predefined hosts.
+        name:
+          type: string
+        hostPattern:
+          type: string
+        scope:
+          type: string
+          nullable: true
+          enum:
+          - project
+          - organization
+          - null
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: API key obtained from the dashboard or `GET /user/api-key`

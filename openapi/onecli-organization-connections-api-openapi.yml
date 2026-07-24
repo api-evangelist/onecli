@@ -1,0 +1,212 @@
+openapi: 3.1.0
+info:
+  title: OneCLI Agent Setup Organization Connections API
+  version: '1.0'
+  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
+
+
+    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
+
+
+    ## Authentication
+
+
+    All endpoints require authentication via one of:
+
+
+    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
+
+    - **Session** — Cookie-based session from the web dashboard.
+
+
+    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
+
+    '
+servers:
+- url: https://api.onecli.sh/v1
+  description: OneCLI Cloud
+- url: http://localhost:10254/v1
+  description: Self-hosted (Docker)
+security:
+- bearerAuth: []
+tags:
+- name: Organization Connections
+  description: Manage app connections at the organization level. Available on OneCLI Cloud and self-hosted Enterprise.
+paths:
+  /org/connections:
+    get:
+      operationId: listOrgConnections
+      summary: List organization connections
+      description: Returns all app connections scoped to the organization. Filter with the `provider` query parameter. Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise.
+      tags:
+      - Organization Connections
+      parameters:
+      - $ref: '#/components/parameters/providerQuery'
+      responses:
+        '200':
+          description: List of organization connections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AppConnection'
+  /org/connections/{connectionId}:
+    patch:
+      operationId: renameOrgConnection
+      summary: Rename an organization connection
+      description: Sets the display label of an organization connection. Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise.
+      tags:
+      - Organization Connections
+      parameters:
+      - $ref: '#/components/parameters/connectionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - label
+              properties:
+                label:
+                  type: string
+                  minLength: 1
+      responses:
+        '200':
+          description: Connection renamed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  provider:
+                    type: string
+                  status:
+                    type: string
+                  label:
+                    type: string
+                    nullable: true
+        '400':
+          description: Label is required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteOrgConnection
+      summary: Disconnect an organization connection
+      description: Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise.
+      tags:
+      - Organization Connections
+      parameters:
+      - $ref: '#/components/parameters/connectionId'
+      responses:
+        '204':
+          description: Connection deleted
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Connection not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  parameters:
+    connectionId:
+      name: connectionId
+      in: path
+      required: true
+      schema:
+        type: string
+    providerQuery:
+      name: provider
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Filter results to a single provider (e.g. `gmail`, `github`)
+  schemas:
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
+    AppConnection:
+      type: object
+      properties:
+        id:
+          type: string
+        provider:
+          type: string
+        label:
+          type: string
+          nullable: true
+          description: Display label extracted from metadata (e.g., email address)
+        status:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
+        scope:
+          type: string
+          enum:
+          - project
+          - organization
+          description: Project lists include inherited organization connections; use this to tell them apart.
+        metadata:
+          type: object
+          nullable: true
+          description: Provider metadata captured at connect time (e.g. account email or username).
+        connectedAt:
+          type: string
+          format: date-time
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: API key obtained from the dashboard or `GET /user/api-key`

@@ -1,0 +1,163 @@
+openapi: 3.1.0
+info:
+  title: OneCLI Agent Setup Team API
+  version: '1.0'
+  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
+
+
+    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
+
+
+    ## Authentication
+
+
+    All endpoints require authentication via one of:
+
+
+    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
+
+    - **Session** — Cookie-based session from the web dashboard.
+
+
+    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
+
+    '
+servers:
+- url: https://api.onecli.sh/v1
+  description: OneCLI Cloud
+- url: http://localhost:10254/v1
+  description: Self-hosted (Docker)
+security:
+- bearerAuth: []
+tags:
+- name: Team
+  description: Provision team members programmatically. Requires admin role. Cloud only.
+paths:
+  /team/provisions:
+    post:
+      operationId: provisionUser
+      summary: Provision a team member
+      description: 'Pre-creates a user account with its own project, a usable API key, a default
+
+        agent, and a claim link. The API key works immediately, so agents can make
+
+        requests before the user signs up. The user later opens the claim link to bind
+
+        the account to their identity. Unclaimed provisions expire after 7 days and are
+
+        cleaned up automatically.
+
+
+        Requires an admin or owner role. Cloud only.
+
+        '
+      tags:
+      - Team
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  type: string
+                  enum:
+                  - admin
+                  - member
+                  default: member
+                  description: Role the provisioned user will have in the organization.
+                skipOnboarding:
+                  type: boolean
+                  default: true
+                  description: Whether the user skips the onboarding wizard after claiming.
+      responses:
+        '201':
+          description: User provisioned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProvisionResult'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Insufficient permissions (requires admin or owner)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    ProvisionResult:
+      type: object
+      description: Returned once when a user is provisioned. The API key is shown only here.
+      properties:
+        id:
+          type: string
+          description: Provision record ID.
+        userId:
+          type: string
+          description: Placeholder user ID (becomes the real user after the claim).
+        projectId:
+          type: string
+          description: Pre-created project ID.
+        apiKey:
+          type: string
+          description: Project-scoped API key (`oc_…`), usable immediately.
+        claimUrl:
+          type: string
+          description: Link the user opens to claim the account.
+        expiresAt:
+          type: string
+          format: date-time
+          description: When the unclaimed provision expires (7 days from creation).
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: API key obtained from the dashboard or `GET /user/api-key`

@@ -1,0 +1,135 @@
+openapi: 3.1.0
+info:
+  title: OneCLI Agent Setup User API
+  version: '1.0'
+  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
+
+
+    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
+
+
+    ## Authentication
+
+
+    All endpoints require authentication via one of:
+
+
+    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
+
+    - **Session** — Cookie-based session from the web dashboard.
+
+
+    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
+
+    '
+servers:
+- url: https://api.onecli.sh/v1
+  description: OneCLI Cloud
+- url: http://localhost:10254/v1
+  description: Self-hosted (Docker)
+security:
+- bearerAuth: []
+tags:
+- name: User
+  description: Manage your user profile and API keys.
+paths:
+  /user:
+    get:
+      operationId: getUser
+      summary: Get current user
+      description: Returns the profile of the authenticated user.
+      tags:
+      - User
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    patch:
+      operationId: updateUser
+      summary: Update user profile
+      tags:
+      - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  email:
+                    type: string
+                  name:
+                    type: string
+  /user/api-key:
+    get:
+      operationId: getApiKey
+      summary: Get API key
+      description: Returns the current API key for the authenticated user in the current project.
+      tags:
+      - User
+      responses:
+        '200':
+          description: API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  apiKey:
+                    type: string
+  /user/api-key/regenerate:
+    post:
+      operationId: regenerateApiKey
+      summary: Regenerate API key
+      description: Generates a new API key, immediately invalidating the previous one.
+      tags:
+      - User
+      responses:
+        '200':
+          description: New API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  apiKey:
+                    type: string
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: API key obtained from the dashboard or `GET /user/api-key`

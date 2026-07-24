@@ -1,0 +1,524 @@
+openapi: 3.1.0
+info:
+  title: OneCLI Agent Setup Agents API
+  version: '1.0'
+  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
+
+
+    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
+
+
+    ## Authentication
+
+
+    All endpoints require authentication via one of:
+
+
+    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
+
+    - **Session** — Cookie-based session from the web dashboard.
+
+
+    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
+
+    '
+servers:
+- url: https://api.onecli.sh/v1
+  description: OneCLI Cloud
+- url: http://localhost:10254/v1
+  description: Self-hosted (Docker)
+security:
+- bearerAuth: []
+tags:
+- name: Agents
+  description: Manage agents and their access tokens, secrets, and configuration.
+paths:
+  /agents:
+    get:
+      operationId: listAgents
+      summary: List agents
+      description: Returns all agents in the current project with secret and connection counts.
+      tags:
+      - Agents
+      responses:
+        '200':
+          description: List of agents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Agent'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: createAgent
+      summary: Create an agent
+      description: 'Creates a new agent in the current project. The identifier must be lowercase alphanumeric with hyphens, starting with a letter or number (max 50 chars).
+
+
+        The response does not include the agent''s access token — read it from `GET /agents` or regenerate it with `POST /agents/{agentId}/regenerate-token`.
+
+        '
+      tags:
+      - Agents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              - identifier
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                  description: Display name for the agent
+                  example: Claude Assistant
+                identifier:
+                  type: string
+                  pattern: ^[a-z0-9][a-z0-9-]{0,49}$
+                  description: Unique identifier (lowercase, alphanumeric, hyphens)
+                  example: claude-assistant
+                parentIdentifier:
+                  type: string
+                  pattern: ^[a-z0-9][a-z0-9-]{0,49}$
+                  description: Identifier of a parent agent. The new agent inherits the parent's secret mode, secret assignments, and app-connection assignments.
+                  example: orchestrator
+      responses:
+        '201':
+          description: Agent created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  identifier:
+                    type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Agent with this identifier already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /agents/default:
+    get:
+      operationId: getDefaultAgent
+      summary: Get default agent
+      description: Returns the default agent for the current project.
+      tags:
+      - Agents
+      responses:
+        '200':
+          description: Default agent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        '404':
+          description: No default agent found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /agents/{agentId}:
+    patch:
+      operationId: renameAgent
+      summary: Rename an agent
+      tags:
+      - Agents
+      parameters:
+      - $ref: '#/components/parameters/agentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                  example: Production Agent
+      responses:
+        '200':
+          description: Agent renamed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteAgent
+      summary: Delete an agent
+      tags:
+      - Agents
+      parameters:
+      - $ref: '#/components/parameters/agentId'
+      responses:
+        '204':
+          description: Agent deleted
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /agents/{agentId}/set-default:
+    post:
+      operationId: setDefaultAgent
+      summary: Set default agent
+      description: Marks the specified agent as the project's default agent.
+      tags:
+      - Agents
+      parameters:
+      - $ref: '#/components/parameters/agentId'
+      responses:
+        '200':
+          description: Default agent updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /agents/{agentId}/regenerate-token:
+    post:
+      operationId: regenerateAgentToken
+      summary: Regenerate agent token
+      description: Generates a new access token for the agent. The previous token is immediately invalidated.
+      tags:
+      - Agents
+      parameters:
+      - $ref: '#/components/parameters/agentId'
+      responses:
+        '200':
+          description: New token generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /agents/{agentId}/secret-mode:
+    patch:
+      operationId: updateAgentSecretMode
+      summary: Update agent secret mode
+      description: 'Controls which secrets the agent can access:
+
+        - `all` — the agent can use every secret in the project.
+
+        - `selective` — only secrets explicitly assigned via `PUT /agents/{agentId}/secrets`.
+
+        '
+      tags:
+      - Agents
+      parameters:
+      - $ref: '#/components/parameters/agentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - mode
+              properties:
+                mode:
+                  type: string
+                  enum:
+                  - all
+                  - selective
+      responses:
+        '200':
+          description: Secret mode updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+  /agents/{agentId}/secrets:
+    get:
+      operationId: getAgentSecrets
+      summary: List agent's assigned secrets
+      description: Returns the IDs of secrets assigned to this agent (relevant when secret mode is `selective`).
+      tags:
+      - Agents
+      parameters:
+      - $ref: '#/components/parameters/agentId'
+      responses:
+        '200':
+          description: List of secret IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+    put:
+      operationId: updateAgentSecrets
+      summary: Update agent's assigned secrets
+      description: Replaces the full list of secrets assigned to this agent.
+      tags:
+      - Agents
+      parameters:
+      - $ref: '#/components/parameters/agentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - secretIds
+              properties:
+                secretIds:
+                  type: array
+                  items:
+                    type: string
+                  description: Array of secret IDs to assign
+      responses:
+        '200':
+          description: Secrets updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+  /agents/granular-access:
+    get:
+      operationId: listAgentGranularAccess
+      summary: List granular-access policies
+      description: 'Read-only overview of every agent → connection assignment in the project that carries a non-empty granular-access policy (e.g. GitHub repository or Dropbox folder scoping). Unrestricted assignments are omitted.
+
+        '
+      tags:
+      - Agents
+      responses:
+        '200':
+          description: Granular-access entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    agentId:
+                      type: string
+                    agentName:
+                      type: string
+                    connectionId:
+                      type: string
+                    provider:
+                      type: string
+                    connectionLabel:
+                      type: string
+                      nullable: true
+                    policy:
+                      type: object
+                      description: Provider-specific session policy (e.g. allowed GitHub repositories or Dropbox folders).
+  /agents/{agentId}/connections:
+    get:
+      operationId: getAgentConnections
+      summary: List agent's app-connection assignments
+      description: Returns the agent's app-connection assignments and their per-connection granular-access policies.
+      tags:
+      - Agents
+      parameters:
+      - $ref: '#/components/parameters/agentId'
+      responses:
+        '200':
+          description: App-connection assignments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    appConnectionId:
+                      type: string
+                    sessionPolicy:
+                      type: object
+                      nullable: true
+                      description: Provider-specific granular-access policy, or null for unrestricted access.
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      operationId: updateAgentConnections
+      summary: Update agent's app-connection assignments
+      description: Replaces the agent's app-connection assignments and their granular-access policies.
+      tags:
+      - Agents
+      parameters:
+      - $ref: '#/components/parameters/agentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - connections
+              properties:
+                connections:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                    - appConnectionId
+                    properties:
+                      appConnectionId:
+                        type: string
+                      sessionPolicy:
+                        type: object
+                        nullable: true
+                        description: Provider-specific granular-access policy (validated per provider). Omit or null for unrestricted access.
+      responses:
+        '200':
+          description: Assignments updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
+    Agent:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        identifier:
+          type: string
+        accessToken:
+          type: string
+          description: The agent's gateway access token (`aoc_…`). Returned by `GET /agents` and `GET /agents/default`; not included in the `POST /agents` response — read it from the list or regenerate it.
+        isDefault:
+          type: boolean
+        secretMode:
+          type: string
+          enum:
+          - all
+          - selective
+        createdAt:
+          type: string
+          format: date-time
+        _count:
+          type: object
+          properties:
+            agentSecrets:
+              type: integer
+            agentAppConnections:
+              type: integer
+  parameters:
+    agentId:
+      name: agentId
+      in: path
+      required: true
+      schema:
+        type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: API key obtained from the dashboard or `GET /user/api-key`

@@ -1,0 +1,127 @@
+openapi: 3.1.0
+info:
+  title: OneCLI Agent Setup Utility API
+  version: '1.0'
+  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
+
+
+    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
+
+
+    ## Authentication
+
+
+    All endpoints require authentication via one of:
+
+
+    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
+
+    - **Session** — Cookie-based session from the web dashboard.
+
+
+    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
+
+    '
+servers:
+- url: https://api.onecli.sh/v1
+  description: OneCLI Cloud
+- url: http://localhost:10254/v1
+  description: Self-hosted (Docker)
+security:
+- bearerAuth: []
+tags:
+- name: Utility
+  description: Health check and project resource summaries.
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Health check
+      description: Returns the API's status and version. No authentication required.
+      security: []
+      tags:
+      - Utility
+      responses:
+        '200':
+          description: Service health
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  version:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+  /counts:
+    get:
+      operationId: getCounts
+      summary: Get resource counts
+      description: Returns the current project's resource totals.
+      tags:
+      - Utility
+      responses:
+        '200':
+          description: Resource counts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceCounts'
+  /vaults:
+    get:
+      operationId: listVaults
+      summary: List vault connections
+      description: Returns the project's external vault connections (e.g. 1Password). Vault pairing and disconnect are performed on the gateway process, not this API.
+      tags:
+      - Utility
+      responses:
+        '200':
+          description: List of vault connections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VaultConnection'
+components:
+  schemas:
+    ResourceCounts:
+      type: object
+      properties:
+        agents:
+          type: integer
+        apps:
+          type: integer
+          description: Connected app connections (including inherited organization connections).
+        llms:
+          type: integer
+          description: Non-generic secrets (LLM keys).
+        secrets:
+          type: integer
+          description: Generic secrets.
+    VaultConnection:
+      type: object
+      properties:
+        id:
+          type: string
+        provider:
+          type: string
+          description: External vault provider (e.g. `onepassword`).
+        status:
+          type: string
+        name:
+          type: string
+          nullable: true
+        lastConnectedAt:
+          type: string
+          format: date-time
+          nullable: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: API key obtained from the dashboard or `GET /user/api-key`

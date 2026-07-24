@@ -1,0 +1,249 @@
+openapi: 3.1.0
+info:
+  title: OneCLI Agent Setup Projects API
+  version: '1.0'
+  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
+
+
+    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
+
+
+    ## Authentication
+
+
+    All endpoints require authentication via one of:
+
+
+    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
+
+    - **Session** — Cookie-based session from the web dashboard.
+
+
+    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
+
+    '
+servers:
+- url: https://api.onecli.sh/v1
+  description: OneCLI Cloud
+- url: http://localhost:10254/v1
+  description: Self-hosted (Docker)
+security:
+- bearerAuth: []
+tags:
+- name: Projects
+  description: Manage projects within your organization. Requires admin role for create/update and owner role for delete. Cloud only.
+paths:
+  /projects:
+    get:
+      operationId: listProjects
+      summary: List projects
+      description: Returns all projects in the authenticated user's organization. Cloud only.
+      tags:
+      - Projects
+      responses:
+        '200':
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+    post:
+      operationId: createProject
+      summary: Create a project
+      description: Creates a new project in the organization. Requires admin role.
+      tags:
+      - Projects
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 50
+                  example: Production
+      responses:
+        '201':
+          description: Project created
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Project'
+                - type: object
+                  properties:
+                    apiKey:
+                      type: string
+                      nullable: true
+                      description: Project-scoped API key (`oc_…`) for the new project, seeded for the creating user. Save it — it is only returned here.
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: A project with this slug already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /projects/{projectId}:
+    get:
+      operationId: getProject
+      summary: Get a project
+      description: Returns a single project by ID.
+      tags:
+      - Projects
+      parameters:
+      - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Project details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      operationId: updateProject
+      summary: Update a project
+      description: Updates a project's name and slug. Requires admin role.
+      tags:
+      - Projects
+      parameters:
+      - $ref: '#/components/parameters/projectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 50
+      responses:
+        '200':
+          description: Project updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: A project with this slug already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteProject
+      summary: Delete a project
+      description: 'Permanently deletes a project and all its data (agents, secrets, connections, rules, audit logs). Requires admin role. Cannot delete the last project in the organization.
+
+        '
+      tags:
+      - Projects
+      parameters:
+      - $ref: '#/components/parameters/projectId'
+      responses:
+        '204':
+          description: Project deleted
+        '400':
+          description: Cannot delete the only project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
+    Project:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
+  parameters:
+    projectId:
+      name: projectId
+      in: path
+      required: true
+      schema:
+        type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: API key obtained from the dashboard or `GET /user/api-key`

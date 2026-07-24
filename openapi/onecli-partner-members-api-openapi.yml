@@ -1,0 +1,247 @@
+openapi: 3.1.0
+info:
+  title: OneCLI Agent Setup Partner Members API
+  version: '1.0'
+  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
+
+
+    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
+
+
+    ## Authentication
+
+
+    All endpoints require authentication via one of:
+
+
+    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
+
+    - **Session** — Cookie-based session from the web dashboard.
+
+
+    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
+
+    '
+servers:
+- url: https://api.onecli.sh/v1
+  description: OneCLI Cloud
+- url: http://localhost:10254/v1
+  description: Self-hosted (Docker)
+security:
+- bearerAuth: []
+tags:
+- name: Partner Members
+  description: Manage who can sign in to your partner portal. Owner or admin only. Cloud only.
+paths:
+  /partner/members:
+    get:
+      operationId: listPartnerMembers
+      summary: List partner members
+      description: Returns the people who can sign in to your partner portal. Requires a Partner API key (`oc_partner_…`) or a partner portal session.
+      tags:
+      - Partner Members
+      responses:
+        '200':
+          description: List of members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PartnerMember'
+    post:
+      operationId: addPartnerMember
+      summary: Add a partner member
+      description: 'Adds a member to your partner by email; they sign in to the portal with that email. Only owners and admins can add members. The assignable roles are `admin` and `member` — the owner role is set at partner creation and can''t be granted.
+
+        '
+      tags:
+      - Partner Members
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - email
+              - role
+              properties:
+                email:
+                  type: string
+                  format: email
+                  maxLength: 255
+                  example: teammate@acme.com
+                role:
+                  type: string
+                  enum:
+                  - admin
+                  - member
+      responses:
+        '201':
+          description: Member added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerMember'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Caller is not a partner owner or admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: A member with this email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partner/members/{userId}/role:
+    patch:
+      operationId: changePartnerMemberRole
+      summary: Change a member's role
+      description: Moves a member between `admin` and `member`. Only owners and admins can do this, and the owner's role can't be changed.
+      tags:
+      - Partner Members
+      parameters:
+      - $ref: '#/components/parameters/userId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - role
+              properties:
+                role:
+                  type: string
+                  enum:
+                  - admin
+                  - member
+      responses:
+        '200':
+          description: Role updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Caller is not a partner owner or admin, or the target is the owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Member not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partner/members/{userId}:
+    delete:
+      operationId: removePartnerMember
+      summary: Remove a partner member
+      description: Removes a member from your partner. Only owners and admins can do this, and the owner can't be removed.
+      tags:
+      - Partner Members
+      parameters:
+      - $ref: '#/components/parameters/userId'
+      responses:
+        '204':
+          description: Member removed
+        '403':
+          description: Caller is not a partner owner or admin, or the target is the owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Member not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  parameters:
+    userId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: ID of a partner member (the user).
+  schemas:
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    PartnerMember:
+      type: object
+      properties:
+        userId:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum:
+          - owner
+          - admin
+          - member
+          description: '`owner` (one per partner, set at creation), `admin` (manages members), or `member`.'
+        createdAt:
+          type: string
+          format: date-time
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: API key obtained from the dashboard or `GET /user/api-key`

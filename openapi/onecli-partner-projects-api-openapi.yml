@@ -1,0 +1,186 @@
+openapi: 3.1.0
+info:
+  title: OneCLI Agent Setup Partner Projects API
+  version: '1.0'
+  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
+
+
+    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
+
+
+    ## Authentication
+
+
+    All endpoints require authentication via one of:
+
+
+    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
+
+    - **Session** — Cookie-based session from the web dashboard.
+
+
+    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
+
+    '
+servers:
+- url: https://api.onecli.sh/v1
+  description: OneCLI Cloud
+- url: http://localhost:10254/v1
+  description: Self-hosted (Docker)
+security:
+- bearerAuth: []
+tags:
+- name: Partner Projects
+  description: Manage projects within an unclaimed partner organization. Cloud only.
+paths:
+  /partner/orgs/{orgId}/projects:
+    get:
+      operationId: listPartnerProjects
+      summary: List projects
+      description: Returns the projects in an organization you manage.
+      tags:
+      - Partner Projects
+      parameters:
+      - $ref: '#/components/parameters/orgId'
+      responses:
+        '200':
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+        '404':
+          description: Organization not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: createPartnerProject
+      summary: Create a project
+      description: Adds a project to an unclaimed organization.
+      tags:
+      - Partner Projects
+      parameters:
+      - $ref: '#/components/parameters/orgId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 50
+                  example: Staging
+      responses:
+        '201':
+          description: Project created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partner/orgs/{orgId}/projects/{projectId}:
+    delete:
+      operationId: deletePartnerProject
+      summary: Delete a project
+      description: Removes a project from an unclaimed organization. An organization must keep at least one project.
+      tags:
+      - Partner Projects
+      parameters:
+      - $ref: '#/components/parameters/orgId'
+      - $ref: '#/components/parameters/projectId'
+      responses:
+        '204':
+          description: Project deleted
+        '400':
+          description: Cannot delete the only project in the organization
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Organization or project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
+    Project:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
+  parameters:
+    projectId:
+      name: projectId
+      in: path
+      required: true
+      schema:
+        type: string
+    orgId:
+      name: orgId
+      in: path
+      required: true
+      schema:
+        type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: API key obtained from the dashboard or `GET /user/api-key`

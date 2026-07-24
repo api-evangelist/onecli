@@ -1,0 +1,314 @@
+openapi: 3.1.0
+info:
+  title: OneCLI Agent Setup Partner Organizations API
+  version: '1.0'
+  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
+
+
+    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
+
+
+    ## Authentication
+
+
+    All endpoints require authentication via one of:
+
+
+    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
+
+    - **Session** — Cookie-based session from the web dashboard.
+
+
+    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
+
+    '
+servers:
+- url: https://api.onecli.sh/v1
+  description: OneCLI Cloud
+- url: http://localhost:10254/v1
+  description: Self-hosted (Docker)
+security:
+- bearerAuth: []
+tags:
+- name: Partner Organizations
+  description: Create and manage customer organizations as a partner. Requires a Partner API key. Cloud only.
+paths:
+  /partner/orgs:
+    get:
+      operationId: listPartnerOrgs
+      summary: List partner organizations
+      description: Returns all organizations created by your partner account, including each one's claim status. Requires a Partner API key (`oc_partner_…`).
+      tags:
+      - Partner Organizations
+      responses:
+        '200':
+          description: List of organizations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PartnerOrg'
+    post:
+      operationId: createPartnerOrg
+      summary: Create an organization
+      description: 'Creates an organization for a customer, with a default project, an organization-scoped API key, a project-scoped API key, a default agent token, and a claim link.
+
+
+        These tokens are returned **once** in this response and are never shown again — store them when you create the organization.
+
+        '
+      tags:
+      - Partner Organizations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                  example: Acme Corp
+      responses:
+        '201':
+          description: Organization created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatePartnerOrgResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partner/orgs/{orgId}:
+    get:
+      operationId: getPartnerOrg
+      summary: Get an organization
+      description: Returns a single organization you manage, including its claim status and projects.
+      tags:
+      - Partner Organizations
+      parameters:
+      - $ref: '#/components/parameters/orgId'
+      responses:
+        '200':
+          description: Organization
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerOrg'
+        '404':
+          description: Organization not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deletePartnerOrg
+      summary: Delete an unclaimed organization
+      description: Permanently deletes an organization and all of its content. Only allowed while the organization is unclaimed.
+      tags:
+      - Partner Organizations
+      parameters:
+      - $ref: '#/components/parameters/orgId'
+      responses:
+        '204':
+          description: Organization deleted
+        '403':
+          description: Organization has already been claimed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Organization not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partner/orgs/{orgId}/claim-link:
+    post:
+      operationId: reissuePartnerClaimLink
+      summary: Reissue a claim link
+      description: Generates a new claim link for an unclaimed organization, invalidating the previous one. Only allowed while the organization is unclaimed.
+      tags:
+      - Partner Organizations
+      parameters:
+      - $ref: '#/components/parameters/orgId'
+      responses:
+        '200':
+          description: New claim link
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimLinkResponse'
+        '403':
+          description: Organization has already been claimed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Organization not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partner/orgs/{orgId}/rotate-tokens:
+    post:
+      operationId: rotatePartnerOrgTokens
+      summary: Rotate organization tokens
+      description: Mints a new organization-scoped API key and default project API key for an unclaimed organization. The previous keys stop working immediately.
+      tags:
+      - Partner Organizations
+      parameters:
+      - $ref: '#/components/parameters/orgId'
+      responses:
+        '200':
+          description: New tokens
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RotateTokensResponse'
+        '403':
+          description: Organization has already been claimed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Organization not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    RotateTokensResponse:
+      type: object
+      properties:
+        orgApiKey:
+          type: string
+        projectApiKey:
+          type: string
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
+    CreatePartnerOrgResponse:
+      type: object
+      description: Returned once when an organization is created. These tokens are never shown again.
+      properties:
+        organizationId:
+          type: string
+        projectId:
+          type: string
+        orgApiKey:
+          type: string
+          description: Organization-scoped API key (`oc_org_…`).
+        projectApiKey:
+          type: string
+          description: Project-scoped API key for the default project.
+        agentToken:
+          type: string
+          description: Access token for the default agent.
+        claimUrl:
+          type: string
+          description: Link the customer opens to claim ownership.
+    ClaimLinkResponse:
+      type: object
+      properties:
+        claimUrl:
+          type: string
+    Project:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    PartnerOrg:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+          - unclaimed
+          - claimed
+          - detached
+          description: Whether the organization has been claimed by a customer, or detached from the partner.
+        claimedByEmail:
+          type: string
+          nullable: true
+          description: Email of the customer who claimed the organization, if claimed.
+        claimedAt:
+          type: string
+          format: date-time
+          nullable: true
+        projects:
+          type: array
+          items:
+            $ref: '#/components/schemas/Project'
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
+  parameters:
+    orgId:
+      name: orgId
+      in: path
+      required: true
+      schema:
+        type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: API key obtained from the dashboard or `GET /user/api-key`

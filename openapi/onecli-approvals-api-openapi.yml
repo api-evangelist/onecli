@@ -1,0 +1,220 @@
+openapi: 3.1.0
+info:
+  title: OneCLI Agent Setup Approvals API
+  version: '1.0'
+  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
+
+
+    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
+
+
+    ## Authentication
+
+
+    All endpoints require authentication via one of:
+
+
+    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
+
+    - **Session** — Cookie-based session from the web dashboard.
+
+
+    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
+
+    '
+servers:
+- url: https://api.onecli.sh/v1
+  description: OneCLI Cloud
+- url: http://localhost:10254/v1
+  description: Self-hosted (Docker)
+security:
+- bearerAuth: []
+tags:
+- name: Approvals
+  description: Long-poll for pending manual-approval requests and submit approve/deny decisions.
+paths:
+  /approvals/pending:
+    get:
+      operationId: listPendingApprovals
+      summary: List pending approvals
+      description: 'Long-polls for manual-approval requests awaiting a decision in the current project. Returns immediately when any are pending, otherwise holds the connection open (up to `timeoutSeconds`) until one arrives or the poll times out.
+
+
+        Authenticate with a project API key, or an organization key plus an `X-Project-Id` header. Submit each decision to `POST /approvals/{id}/decision`.
+
+        '
+      tags:
+      - Approvals
+      parameters:
+      - name: exclude
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Comma-separated approval IDs to skip (already being handled) so the poll can hold open for genuinely new requests.
+      responses:
+        '200':
+          description: Pending approval requests in the project
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requests:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PendingApproval'
+                  timeoutSeconds:
+                    type: integer
+                    description: How long the server holds the long-poll open, in seconds.
+        '401':
+          description: No project context (send an `X-Project-Id` header with an organization key, or use a project key)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /approvals/{id}/decision:
+    post:
+      operationId: submitApprovalDecision
+      summary: Submit an approval decision
+      description: 'Approve or deny a pending manual-approval request. Approving forwards the held request to its upstream service; denying blocks it. Scope the call to the request''s project with a project API key or an `X-Project-Id` header.
+
+        '
+      tags:
+      - Approvals
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The approval ID from `GET /approvals/pending`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - decision
+              properties:
+                decision:
+                  type: string
+                  enum:
+                  - approve
+                  - deny
+                  description: Whether to forward the held request (`approve`) or block it (`deny`).
+      responses:
+        '200':
+          description: Decision recorded and the held request released
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '404':
+          description: No pending approval with that ID in this project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '410':
+          description: The approval expired before the decision was submitted (it was auto-denied)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    PendingApproval:
+      type: object
+      description: A manual-approval request awaiting a decision, tagged with the project it belongs to.
+      properties:
+        id:
+          type: string
+          description: Unique approval ID. Pass to `POST /approvals/{id}/decision` to decide it.
+        projectId:
+          type: string
+          description: The project this request belongs to. Send it as `X-Project-Id` when submitting the decision.
+        method:
+          type: string
+          description: HTTP method of the held request (e.g. `POST`).
+        url:
+          type: string
+          description: Full URL of the held request.
+        host:
+          type: string
+        path:
+          type: string
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          description: Sanitized request headers (auth headers removed).
+        bodyPreview:
+          type: string
+          nullable: true
+          description: Human-readable, length-bounded rendering of the request body — safe to display directly.
+        summary:
+          type: object
+          nullable: true
+          description: Structured form of `bodyPreview` for richer rendering (an `action` label plus key/value `details`).
+        agent:
+          type: object
+          description: The agent that made the request.
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            externalId:
+              type: string
+              nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: API key obtained from the dashboard or `GET /user/api-key`

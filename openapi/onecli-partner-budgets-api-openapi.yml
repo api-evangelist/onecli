@@ -1,0 +1,221 @@
+openapi: 3.1.0
+info:
+  title: OneCLI Agent Setup Partner Budgets API
+  version: '1.0'
+  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
+
+
+    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
+
+
+    ## Authentication
+
+
+    All endpoints require authentication via one of:
+
+
+    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
+
+    - **Session** — Cookie-based session from the web dashboard.
+
+
+    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
+
+    '
+servers:
+- url: https://api.onecli.sh/v1
+  description: OneCLI Cloud
+- url: http://localhost:10254/v1
+  description: Self-hosted (Docker)
+security:
+- bearerAuth: []
+tags:
+- name: Partner Budgets
+  description: Cap how much an organization can spend on a partner LLM key. Owner or admin only. Cloud only.
+paths:
+  /partner/orgs/{orgId}/budgets:
+    get:
+      operationId: listPartnerOrgBudgets
+      summary: List spend budgets for an organization
+      description: Returns the spend budgets set on your LLM keys for one organization, each with its current-period spend. Requires a Partner API key (`oc_partner_…`).
+      tags:
+      - Partner Budgets
+      parameters:
+      - $ref: '#/components/parameters/orgId'
+      responses:
+        '200':
+          description: List of budgets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Budget'
+        '404':
+          description: Organization not found for this partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partner/orgs/{orgId}/secrets/{secretId}/budget:
+    post:
+      operationId: setPartnerOrgBudget
+      summary: Set or update a spend budget
+      description: 'Caps how much an organization can spend on one of your LLM keys. When the organization''s spend reaches the limit, the gateway stops using that key for the organization until the budget is raised or reset. Creates the budget, or replaces the existing one.
+
+
+        Only partner owners and admins can set budgets, and budgets are supported on metered LLM keys (Anthropic today).
+
+        '
+      tags:
+      - Partner Budgets
+      parameters:
+      - $ref: '#/components/parameters/orgId'
+      - $ref: '#/components/parameters/secretId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - limitCents
+              - period
+              properties:
+                limitCents:
+                  type: integer
+                  minimum: 1
+                  maximum: 100000000
+                  description: Spend ceiling in US cents (e.g. `500` = $5.00).
+                  example: 500
+                period:
+                  type: string
+                  enum:
+                  - monthly
+                  - total
+                  description: '`monthly` resets on the 1st of each month (UTC); `total` is a one-time lifetime cap.'
+      responses:
+        '200':
+          description: Budget saved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Budget'
+        '400':
+          description: Validation error, or the secret type isn't supported for budgets
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Caller is not a partner owner or admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Organization or secret not found for this partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: clearPartnerOrgBudget
+      summary: Remove a spend budget
+      description: Removes the spend budget for an organization on one of your LLM keys. The key resumes with no cap for that organization. Only partner owners and admins can do this.
+      tags:
+      - Partner Budgets
+      parameters:
+      - $ref: '#/components/parameters/orgId'
+      - $ref: '#/components/parameters/secretId'
+      responses:
+        '204':
+          description: Budget removed
+        '403':
+          description: Caller is not a partner owner or admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Organization or secret not found for this partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Budget:
+      type: object
+      properties:
+        secretId:
+          type: string
+          description: The partner LLM key this budget caps.
+        organizationId:
+          type: string
+        limitCents:
+          type: integer
+          description: Spend ceiling in US cents (e.g. `500` = $5.00).
+          example: 500
+        period:
+          type: string
+          enum:
+          - monthly
+          - total
+        spentCents:
+          type: integer
+          description: Spend so far this period, in US cents. Updates within a few seconds of usage.
+          example: 320
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
+  parameters:
+    secretId:
+      name: secretId
+      in: path
+      required: true
+      schema:
+        type: string
+    orgId:
+      name: orgId
+      in: path
+      required: true
+      schema:
+        type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: API key obtained from the dashboard or `GET /user/api-key`

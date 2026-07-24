@@ -1,0 +1,141 @@
+openapi: 3.1.0
+info:
+  title: OneCLI Agent Setup Migration API
+  version: '1.0'
+  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
+
+
+    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
+
+
+    ## Authentication
+
+
+    All endpoints require authentication via one of:
+
+
+    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
+
+    - **Session** — Cookie-based session from the web dashboard.
+
+
+    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
+
+    '
+servers:
+- url: https://api.onecli.sh/v1
+  description: OneCLI Cloud
+- url: http://localhost:10254/v1
+  description: Self-hosted (Docker)
+security:
+- bearerAuth: []
+tags:
+- name: Migration
+  description: Migrate data from a self-hosted instance to OneCLI Cloud.
+paths:
+  /migrate/export:
+    post:
+      operationId: migrateExport
+      summary: Export data to OneCLI Cloud
+      description: 'Exports the current self-hosted instance''s data (secrets, agents, agent-secret assignments, rules) directly to OneCLI Cloud over HTTPS. Secrets are decrypted server-side and transmitted to Cloud; plaintext never reaches the caller.
+
+
+        Only available on self-hosted instances — Cloud returns 404.
+
+        '
+      tags:
+      - Migration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - cloudApiKey
+              properties:
+                cloudApiKey:
+                  type: string
+                  description: OneCLI Cloud API key to import into.
+                cloudUrl:
+                  type: string
+                  format: uri
+                  description: 'Override the Cloud API URL (default: `https://api.onecli.sh`).'
+      responses:
+        '200':
+          description: Migration result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  imported:
+                    type: object
+                    properties:
+                      secrets:
+                        type: integer
+                      agents:
+                        type: integer
+                      agentSecrets:
+                        type: integer
+                      rules:
+                        type: integer
+                  skipped:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                        name:
+                          type: string
+                        reason:
+                          type: string
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: API key obtained from the dashboard or `GET /user/api-key`

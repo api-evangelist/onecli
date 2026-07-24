@@ -1,0 +1,556 @@
+openapi: 3.1.0
+info:
+  title: OneCLI Agent Setup Rules API
+  version: '1.0'
+  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
+
+
+    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
+
+
+    ## Authentication
+
+
+    All endpoints require authentication via one of:
+
+
+    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
+
+    - **Session** — Cookie-based session from the web dashboard.
+
+
+    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
+
+    '
+servers:
+- url: https://api.onecli.sh/v1
+  description: OneCLI Cloud
+- url: http://localhost:10254/v1
+  description: Self-hosted (Docker)
+security:
+- bearerAuth: []
+tags:
+- name: Rules
+  description: Manage policy rules that control how agents interact with external services.
+paths:
+  /rules:
+    get:
+      operationId: listRules
+      summary: List policy rules
+      description: Returns all policy rules for the current project.
+      tags:
+      - Rules
+      responses:
+        '200':
+          description: List of rules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyRule'
+    post:
+      operationId: createRule
+      summary: Create a policy rule
+      description: 'Creates a new policy rule. Rules control how agents interact with external services:
+
+
+        - **block** — reject matching requests outright.
+
+        - **rate_limit** — allow up to N requests per time window. Requires `rateLimit` and `rateLimitWindow`.
+
+        - **manual_approval** — hold matching requests for human approval before forwarding.
+
+        - **allow** — explicitly allow matching requests (used to carve exceptions in deny mode or shadow a broader rule).
+
+        '
+      tags:
+      - Rules
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              - hostPattern
+              - action
+              - enabled
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                  example: Block destructive GitHub API calls
+                hostPattern:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+                  example: api.github.com
+                pathPattern:
+                  type: string
+                  maxLength: 1000
+                  example: /repos/*/delete
+                method:
+                  type: string
+                  enum:
+                  - GET
+                  - POST
+                  - PUT
+                  - PATCH
+                  - DELETE
+                action:
+                  type: string
+                  enum:
+                  - block
+                  - rate_limit
+                  - manual_approval
+                  - allow
+                enabled:
+                  type: boolean
+                agentId:
+                  type: string
+                  description: Scope rule to a specific agent (omit for all agents)
+                rateLimit:
+                  type: integer
+                  minimum: 1
+                  maximum: 1000000
+                  description: Required when action is `rate_limit`
+                rateLimitWindow:
+                  type: string
+                  enum:
+                  - minute
+                  - hour
+                  - day
+                  description: Required when action is `rate_limit`
+                conditions:
+                  type: array
+                  maxItems: 10
+                  items:
+                    $ref: '#/components/schemas/RuleCondition'
+      responses:
+        '201':
+          description: Rule created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyRule'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /rules/{ruleId}:
+    get:
+      operationId: getRule
+      summary: Get a policy rule
+      description: Returns a single policy rule by ID.
+      tags:
+      - Rules
+      parameters:
+      - $ref: '#/components/parameters/ruleId'
+      responses:
+        '200':
+          description: Rule details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyRule'
+        '404':
+          description: Rule not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      operationId: updateRule
+      summary: Update a policy rule
+      description: Updates one or more fields on a rule. At least one field must be provided.
+      tags:
+      - Rules
+      parameters:
+      - $ref: '#/components/parameters/ruleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                hostPattern:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+                pathPattern:
+                  type: string
+                  nullable: true
+                method:
+                  type: string
+                  nullable: true
+                  enum:
+                  - GET
+                  - POST
+                  - PUT
+                  - PATCH
+                  - DELETE
+                action:
+                  type: string
+                  enum:
+                  - block
+                  - rate_limit
+                  - manual_approval
+                  - allow
+                enabled:
+                  type: boolean
+                agentId:
+                  type: string
+                  nullable: true
+                rateLimit:
+                  type: integer
+                  nullable: true
+                  minimum: 1
+                  maximum: 1000000
+                rateLimitWindow:
+                  type: string
+                  nullable: true
+                  enum:
+                  - minute
+                  - hour
+                  - day
+                conditions:
+                  type: array
+                  nullable: true
+                  maxItems: 10
+                  items:
+                    $ref: '#/components/schemas/RuleCondition'
+      responses:
+        '200':
+          description: Rule updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Rule not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteRule
+      summary: Delete a policy rule
+      tags:
+      - Rules
+      parameters:
+      - $ref: '#/components/parameters/ruleId'
+      responses:
+        '204':
+          description: Rule deleted
+        '404':
+          description: Rule not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /rules/permissions/{provider}:
+    get:
+      operationId: getRulePermissions
+      summary: Get app permissions (project)
+      description: 'Returns the layered tool-level permission states for a provider at the project scope: `defaults` holds the all-agents states, `byAgent` holds per-agent override layers. Tool IDs come from the app''s permission definition (`GET /apps/{provider}/permission-definition`).
+
+        '
+      tags:
+      - Rules
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      responses:
+        '200':
+          description: Layered permission states
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppPermissionStates'
+    put:
+      operationId: setRulePermissions
+      summary: Set app permissions (project)
+      description: 'Updates tool-level permissions for a provider at the project scope.
+
+
+        Omit `agentId` to write the all-agents defaults. Pass `agentId` to write one agent''s override layer; there, the `inherit` permission removes the agent''s override for a tool so it falls back to the all-agents setting.
+
+        '
+      tags:
+      - Rules
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - changes
+              properties:
+                changes:
+                  type: array
+                  minItems: 1
+                  items:
+                    $ref: '#/components/schemas/ProjectPermissionChange'
+                conditions:
+                  type: array
+                  maxItems: 10
+                  items:
+                    $ref: '#/components/schemas/RuleCondition'
+                agentId:
+                  type: string
+                  minLength: 1
+                  description: Target one agent's override layer instead of the all-agents defaults.
+      responses:
+        '200':
+          description: Permissions updated
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Validation error, unknown provider, or unknown tool
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /rules/overlap/{provider}:
+    get:
+      operationId: getRuleOverlap
+      summary: Count overlapping custom rules (project)
+      description: Counts custom project rules whose host patterns overlap the app's hosts — rules that may interfere with the app's permission settings.
+      tags:
+      - Rules
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      responses:
+        '200':
+          description: Overlap count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+components:
+  schemas:
+    PermissionState:
+      type: object
+      properties:
+        permission:
+          type: string
+          enum:
+          - allow
+          - manual_approval
+          - block
+        conditions:
+          type: array
+          items:
+            type: object
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
+    ProjectPermissionChange:
+      type: object
+      required:
+      - toolId
+      - permission
+      properties:
+        toolId:
+          type: string
+          minLength: 1
+        permission:
+          type: string
+          enum:
+          - allow
+          - manual_approval
+          - block
+          - inherit
+          description: '`inherit` is only valid together with `agentId`: it removes the agent''s override so the tool falls back to the all-agents setting.'
+    PolicyRule:
+      type: object
+      description: 'A policy rule. Custom (user-authored) rules carry their endpoint fields (`hostPattern`/`pathPattern`/`method`); app-permission rules (`metadata.source: app_permission`) omit them and are identified by `metadata.provider` + `metadata.toolId`.'
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        hostPattern:
+          type: string
+          description: Custom rules only; absent on app-permission rules.
+        pathPattern:
+          type: string
+          nullable: true
+          description: Custom rules only; absent on app-permission rules.
+        method:
+          type: string
+          nullable: true
+          enum:
+          - GET
+          - POST
+          - PUT
+          - PATCH
+          - DELETE
+          - null
+          description: Custom rules only; absent on app-permission rules.
+        action:
+          type: string
+          enum:
+          - block
+          - rate_limit
+          - manual_approval
+          - allow
+        enabled:
+          type: boolean
+        agentId:
+          type: string
+          nullable: true
+        rateLimit:
+          type: integer
+          nullable: true
+        rateLimitWindow:
+          type: string
+          nullable: true
+          enum:
+          - minute
+          - hour
+          - day
+          - null
+        scope:
+          type: string
+          enum:
+          - project
+          - organization
+          description: Project lists include inherited organization rules; use this to tell them apart.
+        metadata:
+          type: object
+          nullable: true
+          description: 'Set on rules generated by app permissions (`source: app_permission`, plus `provider` and `toolId`). Null for custom rules.'
+        conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleCondition'
+        createdAt:
+          type: string
+          format: date-time
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
+    AppPermissionStates:
+      type: object
+      description: Layered app-permission states for a provider.
+      properties:
+        defaults:
+          type: object
+          description: Tool states from the all-agents layer (tool ID → state).
+          additionalProperties:
+            $ref: '#/components/schemas/PermissionState'
+        byAgent:
+          type: object
+          description: Per-agent override layers (agent ID → tool ID → state). Always empty at the organization scope, where rules are agent-less.
+          additionalProperties:
+            type: object
+            additionalProperties:
+              $ref: '#/components/schemas/PermissionState'
+    RuleCondition:
+      type: object
+      description: A condition that must match for the rule to apply. Conditions inspect the request body to enable fine-grained filtering beyond host/path/method.
+      required:
+      - target
+      - operator
+      - value
+      properties:
+        target:
+          type: string
+          enum:
+          - body
+          description: What part of the request to inspect.
+        operator:
+          type: string
+          enum:
+          - contains
+          description: How to match the value against the target.
+        value:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          description: The string to match against.
+        key:
+          type: string
+          maxLength: 500
+          description: Optional JSON key path within the body to scope the match.
+  parameters:
+    ruleId:
+      name: ruleId
+      in: path
+      required: true
+      schema:
+        type: string
+    provider:
+      name: provider
+      in: path
+      required: true
+      schema:
+        type: string
+      description: App provider identifier (e.g., `gmail`, `github`, `jira`)
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: API key obtained from the dashboard or `GET /user/api-key`

@@ -1,0 +1,221 @@
+openapi: 3.1.0
+info:
+  title: OneCLI Agent Setup API
+  version: '1.0'
+  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
+
+
+    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
+
+
+    ## Authentication
+
+
+    All endpoints require authentication via one of:
+
+
+    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
+
+    - **Session** — Cookie-based session from the web dashboard.
+
+
+    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
+
+    '
+servers:
+- url: https://api.onecli.sh/v1
+  description: OneCLI Cloud
+- url: http://localhost:10254/v1
+  description: Self-hosted (Docker)
+security:
+- bearerAuth: []
+tags:
+- name: Agent Setup
+  description: Endpoints agents and orchestrators use to bootstrap gateway access (container config, credential stubs, gateway skill).
+paths:
+  /container-config:
+    get:
+      operationId: getContainerConfig
+      summary: Get container configuration
+      description: 'Returns everything an agent orchestrator needs to route a container (or local process) through the OneCLI gateway: proxy environment variables, the gateway CA certificate, and any credential stub files. The server controls all env var names, values, and paths.
+
+        '
+      tags:
+      - Agent Setup
+      parameters:
+      - name: agent
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Agent identifier. Omit to use the project's default agent (created on demand).
+      responses:
+        '200':
+          description: Container configuration
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  env:
+                    type: object
+                    additionalProperties:
+                      type: string
+                    description: Environment variables to set (proxy URLs, CA trust, credential placeholders).
+                  caCertificate:
+                    type: string
+                    description: PEM-encoded gateway CA certificate.
+                  caCertificateContainerPath:
+                    type: string
+                  credentialStubs:
+                    type: array
+                    description: Present when the agent needs local credential stub files (e.g. Codex OAuth).
+                    items:
+                      type: object
+                      properties:
+                        containerPath:
+                          type: string
+                        content:
+                          type: string
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+        '404':
+          description: 'No agent with the given identifier exists (`code: AGENT_NOT_FOUND`)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: CA certificate not available (gateway not started yet)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /credential-stubs:
+    get:
+      operationId: listCredentialStubs
+      summary: List credential stub agents
+      description: Returns the agent frameworks that have credential stubs available.
+      tags:
+      - Agent Setup
+      responses:
+        '200':
+          description: Available agents
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agents:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                    - codex
+  /credential-stubs/{agent}:
+    get:
+      operationId: getCredentialStub
+      summary: Get a credential stub
+      description: Returns a placeholder credential file for the given agent framework (currently `codex`). The gateway injects real credentials at request time.
+      tags:
+      - Agent Setup
+      parameters:
+      - name: agent
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Credential stub
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agent:
+                    type: string
+                  filePath:
+                    type: string
+                    example: ~/.codex/auth.json
+                  content:
+                    type: string
+                  authMode:
+                    type: string
+                    enum:
+                    - api-key
+                    - oauth
+                  permissions:
+                    type: string
+                    example: '0600'
+        '404':
+          description: No credential stub for this agent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /skill/gateway:
+    get:
+      operationId: getGatewaySkill
+      summary: Get the gateway skill
+      description: Returns the gateway skill as Markdown — instructions that teach a coding agent how to work behind the OneCLI gateway. Pass `agent_framework` for framework-specific content.
+      tags:
+      - Agent Setup
+      parameters:
+      - name: agent_framework
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Agent framework name (e.g. `claude`, `codex`).
+      responses:
+        '200':
+          description: Skill content
+          content:
+            text/markdown:
+              schema:
+                type: string
+components:
+  schemas:
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: API key obtained from the dashboard or `GET /user/api-key`

@@ -1,0 +1,636 @@
+openapi: 3.1.0
+info:
+  title: OneCLI Agent Setup Apps API
+  version: '1.0'
+  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
+
+
+    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
+
+
+    ## Authentication
+
+
+    All endpoints require authentication via one of:
+
+
+    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
+
+    - **Session** — Cookie-based session from the web dashboard.
+
+
+    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
+
+    '
+servers:
+- url: https://api.onecli.sh/v1
+  description: OneCLI Cloud
+- url: http://localhost:10254/v1
+  description: Self-hosted (Docker)
+security:
+- bearerAuth: []
+tags:
+- name: Apps
+  description: Manage app connections (OAuth and direct credentials), BYOC configuration, permission catalogs, and blocklists.
+paths:
+  /apps:
+    get:
+      operationId: listApps
+      summary: List apps
+      description: Returns all available apps with their current configuration and connection status.
+      tags:
+      - Apps
+      responses:
+        '200':
+          description: List of apps
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/App'
+  /apps/{provider}:
+    get:
+      operationId: getApp
+      summary: Get app details
+      description: Returns detailed information about a specific app, including setup instructions.
+      tags:
+      - Apps
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      responses:
+        '200':
+          description: App details
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/App'
+                - type: object
+                  properties:
+                    hint:
+                      type: string
+                      description: Setup instructions or guidance
+        '404':
+          description: Unknown provider
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /apps/{provider}/authorize:
+    get:
+      operationId: authorizeApp
+      summary: Start OAuth flow
+      description: 'Redirects the user to the app''s OAuth authorization page. After the user authorizes, they are redirected back to the callback URL.
+
+
+        This endpoint is typically opened in a browser, not called from code.
+
+        '
+      tags:
+      - Apps
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      - name: connectionId
+        in: query
+        schema:
+          type: string
+        description: Reconnect an existing connection instead of creating a new one
+      - name: agent_name
+        in: query
+        schema:
+          type: string
+        description: Agent name to associate with the connection
+      responses:
+        '302':
+          description: Redirect to OAuth provider
+        '400':
+          description: Provider not available or not configured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /apps/{provider}/connect:
+    post:
+      operationId: connectApp
+      summary: Connect app with credentials
+      description: Connects an app using direct credentials (API key, service account, etc.) rather than OAuth.
+      tags:
+      - Apps
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - fields
+              properties:
+                fields:
+                  type: object
+                  additionalProperties:
+                    type: string
+                  description: Credential fields required by the app
+                  example:
+                    apiKey: sk-...
+                connectionId:
+                  type: string
+                  description: Reconnect an existing connection
+                label:
+                  type: string
+                  description: Display label for the connection. Defaults to a label derived from the credential metadata.
+                method:
+                  type: string
+                  description: Connection method to use for apps with multiple methods (e.g. OAuth primary + API-key alternate). An unrecognized value is rejected.
+      responses:
+        '200':
+          description: Connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Validation error or provider not available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /apps/{provider}/config:
+    get:
+      operationId: getAppConfig
+      summary: Get app configuration
+      description: Returns the non-secret configuration for a BYOC (Bring Your Own Credentials) app.
+      tags:
+      - Apps
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      responses:
+        '200':
+          description: App configuration
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  settings:
+                    type: object
+                    additionalProperties:
+                      type: string
+                  hasCredentials:
+                    type: boolean
+                  enabled:
+                    type: boolean
+    post:
+      operationId: upsertAppConfig
+      summary: Set app configuration
+      description: 'Creates or updates the BYOC configuration for an app. Existing connections may be disconnected when credentials change.
+
+
+        The accepted field names are defined per app (e.g. `clientId`/`clientSecret` for OAuth apps; `appId`/`appSlug`/`privateKey` for `github-app`). Unknown keys are stripped.
+
+        '
+      tags:
+      - Apps
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: string
+              description: Credential fields as defined by the app's configuration schema.
+              example:
+                clientId: 1234567890.apps.googleusercontent.com
+                clientSecret: GOCSPX-…
+      responses:
+        '201':
+          description: Configuration saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Provider does not support configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteAppConfig
+      summary: Delete app configuration
+      tags:
+      - Apps
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      responses:
+        '204':
+          description: Configuration deleted
+  /apps/{provider}/config/toggle:
+    patch:
+      operationId: toggleAppConfig
+      summary: Toggle app configuration
+      description: Enables or disables a provider's BYOC configuration in the current project.
+      tags:
+      - Apps
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - enabled
+              properties:
+                enabled:
+                  type: boolean
+      responses:
+        '200':
+          description: Configuration toggled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '404':
+          description: Configuration not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /apps/configured:
+    get:
+      operationId: listConfiguredApps
+      summary: List configured providers
+      description: Returns provider IDs with an enabled BYOC configuration in the current project.
+      tags:
+      - Apps
+      responses:
+        '200':
+          description: List of configured provider IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /apps/env-defaults:
+    get:
+      operationId: listEnvDefaultApps
+      summary: List providers with platform default credentials
+      description: Returns provider IDs whose OAuth credentials are supplied by the deployment's environment, so they work without BYOC configuration.
+      tags:
+      - Apps
+      responses:
+        '200':
+          description: List of provider IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /apps/permission-definitions:
+    get:
+      operationId: listPermissionDefinitions
+      summary: List app permission definitions
+      description: 'Returns the tool catalog of every app that has one — the read/write groups and tool IDs that the permissions endpoints operate on. Global data; works without a project context, so organization keys can call it without `X-Project-Id`.
+
+        '
+      tags:
+      - Apps
+      responses:
+        '200':
+          description: Permission definitions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PermissionDefinition'
+  /apps/{provider}/permission-definition:
+    get:
+      operationId: getPermissionDefinition
+      summary: Get app permission definition
+      description: 'Returns the app''s static tool catalog — the read/write groups and tool IDs that the permissions endpoints (`/rules/permissions/{provider}` and `/org/rules/permissions/{provider}`) operate on. Global data; works without a project context, so organization keys can call it without `X-Project-Id`.
+
+        '
+      tags:
+      - Apps
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      responses:
+        '200':
+          description: Permission definition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionDefinition'
+        '404':
+          description: Unknown provider or no permission definition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /apps/{provider}/blocklist:
+    get:
+      operationId: getBlocklist
+      summary: Get blocklist state
+      description: Returns the blocklist state for a provider — the app's predefined hosts (with their activation state) and any custom rules.
+      tags:
+      - Apps
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      responses:
+        '200':
+          description: Blocklist state
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BlocklistHostState'
+        '404':
+          description: Unknown provider
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: addBlocklistEntry
+      summary: Activate or add a blocklist entry
+      description: 'Provide either `{ hostId }` to activate one of the app''s predefined blocklist hosts, or `{ name, hostPattern }` to add a custom blocklist rule.
+
+        '
+      tags:
+      - Apps
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - type: object
+                title: Activate predefined host
+                required:
+                - hostId
+                properties:
+                  hostId:
+                    type: string
+              - type: object
+                title: Add custom rule
+                required:
+                - name
+                - hostPattern
+                properties:
+                  name:
+                    type: string
+                  hostPattern:
+                    type: string
+      responses:
+        '201':
+          description: Blocklist entry created or activated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlocklistHostState'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /apps/{provider}/blocklist/{ruleId}:
+    patch:
+      operationId: toggleBlocklistRule
+      summary: Toggle a blocklist rule
+      tags:
+      - Apps
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      - $ref: '#/components/parameters/blocklistRuleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - enabled
+              properties:
+                enabled:
+                  type: boolean
+      responses:
+        '200':
+          description: Rule toggled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+    delete:
+      operationId: removeBlocklistRule
+      summary: Remove a blocklist rule
+      tags:
+      - Apps
+      parameters:
+      - $ref: '#/components/parameters/provider'
+      - $ref: '#/components/parameters/blocklistRuleId'
+      responses:
+        '204':
+          description: Rule removed
+components:
+  parameters:
+    blocklistRuleId:
+      name: ruleId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Blocklist rule ID (from the blocklist state's `ruleId` field)
+    provider:
+      name: provider
+      in: path
+      required: true
+      schema:
+        type: string
+      description: App provider identifier (e.g., `gmail`, `github`, `jira`)
+  schemas:
+    BlocklistHostState:
+      type: object
+      description: State of one blocklist entry — a predefined host or a custom rule.
+      properties:
+        hostId:
+          type: string
+        ruleId:
+          type: string
+          nullable: true
+          description: The backing rule ID, or null when a predefined host has never been activated.
+        enabled:
+          type: boolean
+        custom:
+          type: boolean
+          description: True for custom rules, false for the app's predefined hosts.
+        name:
+          type: string
+        hostPattern:
+          type: string
+        scope:
+          type: string
+          nullable: true
+          enum:
+          - project
+          - organization
+          - null
+    AppTool:
+      type: object
+      description: One operation in an app's permission catalog, by identity. The endpoint mapping behind a tool is internal; permission changes reference the tool ID and the server resolves the rest.
+      properties:
+        id:
+          type: string
+          description: The tool ID that permission changes reference.
+        name:
+          type: string
+        description:
+          type: string
+    App:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        available:
+          type: boolean
+        connectionType:
+          type: string
+          enum:
+          - oauth
+          - credentials_import
+          - api_key
+          - cloud_only
+        configurable:
+          type: boolean
+        config:
+          type: object
+          nullable: true
+          properties:
+            hasCredentials:
+              type: boolean
+            enabled:
+              type: boolean
+        connections:
+          type: array
+          description: All of the provider's connections in the current project.
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              label:
+                type: string
+                nullable: true
+              status:
+                type: string
+              scopes:
+                type: array
+                items:
+                  type: string
+              connectedAt:
+                type: string
+                format: date-time
+        credentialStubs:
+          type: array
+          description: Local credential stub files some MCP servers need before they can start (secrets replaced with `onecli-managed` placeholders).
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+                description: Full destination path (e.g. `~/.config/gcloud/application_default_credentials.json`).
+              content:
+                type: object
+                description: Stub file content with `onecli-managed` sentinel values.
+    PermissionDefinition:
+      type: object
+      description: An app's static tool catalog — the tool IDs that the permissions endpoints operate on.
+      properties:
+        provider:
+          type: string
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppToolGroup'
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    AppToolGroup:
+      type: object
+      properties:
+        category:
+          type: string
+          enum:
+          - read
+          - write
+        tools:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppTool'
+        wildcard:
+          $ref: '#/components/schemas/AppTool'
+          description: Optional wildcard tool covering the whole group ("all read/write operations").
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: API key obtained from the dashboard or `GET /user/api-key`
