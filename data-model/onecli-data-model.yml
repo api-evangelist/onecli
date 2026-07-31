@@ -1,0 +1,81 @@
+generated: '2026-07-20'
+method: derived
+source: openapi/onecli-openapi-original.yml
+note: >-
+  Entity graph derived from the OpenAPI schemas, path hierarchy, and API reference.
+  Resource scoping tiers (partner > organization > project) determine ownership and
+  secret/rule inheritance.
+entities:
+- name: Partner
+  description: Reseller/agency account (oc_partner_ keys) that provisions and manages organizations.
+- name: Organization
+  description: Top-level tenant; owns projects, org-level secrets, rules, and connections.
+- name: Project
+  description: Working scope for agents, secrets, connections, and policy rules. Default project created with each org.
+- name: Agent
+  description: An AI agent identity within a project, with its own access token and secret assignments.
+- name: Secret
+  description: A stored credential the gateway injects into outbound requests matching host/path patterns.
+- name: App
+  description: A supported provider (Gmail, GitHub, Slack, AWS, ...) with a static tool/permission catalog.
+- name: AppConnection
+  description: A configured connection to an App (OAuth or BYOC credentials).
+- name: PolicyRule
+  description: A rule controlling agent access (allow, block, rate_limit, manual approval) by host pattern.
+- name: PendingApproval
+  description: A manual-approval request awaiting an approve/deny decision.
+- name: User
+  description: A human account/member; human seats are free on every plan.
+relationships:
+- from: Partner
+  type: has_many
+  to: Organization
+  via: partner-managed
+- from: Organization
+  type: has_many
+  to: Project
+- from: Organization
+  type: has_many
+  to: Secret
+  via: organization-secrets (inherited by projects)
+- from: Project
+  type: has_many
+  to: Agent
+- from: Project
+  type: has_many
+  to: Secret
+- from: Project
+  type: has_many
+  to: AppConnection
+- from: Project
+  type: has_many
+  to: PolicyRule
+- from: Agent
+  type: has_many
+  to: Secret
+  via: assigned secrets (selective mode)
+- from: Agent
+  type: has_many
+  to: AppConnection
+  via: app-connection assignments with granular-access policies
+- from: AppConnection
+  type: belongs_to
+  to: App
+  via: provider
+- from: PolicyRule
+  type: belongs_to
+  to: Agent
+  via: agentId (optional; org rules are agent-less)
+- from: PendingApproval
+  type: belongs_to
+  to: Project
+id_prefixes:
+- prefix: proj_
+  entity: Project
+  evidence: X-Project-Id header example proj_abc123
+- prefix: oc_
+  entity: apikey (project-scoped)
+- prefix: oc_org_
+  entity: apikey (organization-scoped)
+- prefix: oc_partner_
+  entity: apikey (partner-scoped)

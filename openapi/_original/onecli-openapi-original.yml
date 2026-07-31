@@ -1,0 +1,5088 @@
+openapi: 3.1.0
+info:
+  title: OneCLI API
+  version: '1.0'
+  description: >
+    The OneCLI API lets you manage agents, secrets, policy rules, app
+    connections, and user settings programmatically.
+
+
+    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or
+    `http://localhost:10254/v1` (self-hosted)
+
+
+    ## Authentication
+
+
+    All endpoints require authentication via one of:
+
+
+    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the
+    dashboard or via `GET /v1/user/api-key`.
+
+    - **Session** — Cookie-based session from the web dashboard.
+
+
+    For organization-scoped API keys, include the `X-Project-Id` header to
+    specify which project to operate on.
+servers:
+  - url: https://api.onecli.sh/v1
+    description: OneCLI Cloud
+  - url: http://localhost:10254/v1
+    description: Self-hosted (Docker)
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: API key obtained from the dashboard or `GET /user/api-key`
+  schemas:
+    Error:
+      description: |
+        Error responses take one of two shapes depending on the failing layer:
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+        while authentication failures (401/403) and service errors (not-found,
+        conflict, and service-level validation) return the envelope
+        (`{ "error": { "message": "...", "type": "..." } }`).
+      oneOf:
+        - $ref: '#/components/schemas/ErrorFlat'
+        - $ref: '#/components/schemas/ErrorEnvelope'
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    ErrorEnvelope:
+      type: object
+      description: >-
+        Envelope error shape used for authentication failures and service
+        errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
+    SecretCreated:
+      type: object
+      description: The narrowed secret representation returned by create endpoints.
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        valueSource:
+          type: string
+          enum:
+            - inline
+            - onepassword
+        opRef:
+          type: string
+        hostPattern:
+          type: string
+        pathPattern:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        preview:
+          type: string
+          description: Masked preview of the value (inline secrets only).
+    Agent:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        identifier:
+          type: string
+        accessToken:
+          type: string
+          description: >-
+            The agent's gateway access token (`aoc_…`). Returned by `GET
+            /agents` and `GET /agents/default`; not included in the `POST
+            /agents` response — read it from the list or regenerate it.
+        isDefault:
+          type: boolean
+        secretMode:
+          type: string
+          enum:
+            - all
+            - selective
+        createdAt:
+          type: string
+          format: date-time
+        _count:
+          type: object
+          properties:
+            agentSecrets:
+              type: integer
+            agentAppConnections:
+              type: integer
+    PendingApproval:
+      type: object
+      description: >-
+        A manual-approval request awaiting a decision, tagged with the project
+        it belongs to.
+      properties:
+        id:
+          type: string
+          description: >-
+            Unique approval ID. Pass to `POST /approvals/{id}/decision` to
+            decide it.
+        projectId:
+          type: string
+          description: >-
+            The project this request belongs to. Send it as `X-Project-Id` when
+            submitting the decision.
+        method:
+          type: string
+          description: HTTP method of the held request (e.g. `POST`).
+        url:
+          type: string
+          description: Full URL of the held request.
+        host:
+          type: string
+        path:
+          type: string
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          description: Sanitized request headers (auth headers removed).
+        bodyPreview:
+          type: string
+          nullable: true
+          description: >-
+            Human-readable, length-bounded rendering of the request body — safe
+            to display directly.
+        summary:
+          type: object
+          nullable: true
+          description: >-
+            Structured form of `bodyPreview` for richer rendering (an `action`
+            label plus key/value `details`).
+        agent:
+          type: object
+          description: The agent that made the request.
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            externalId:
+              type: string
+              nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+    Secret:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+            - anthropic
+            - openai
+            - generic
+        valueSource:
+          type: string
+          enum:
+            - inline
+            - onepassword
+          description: >-
+            Where the secret value lives — stored encrypted (`inline`) or
+            resolved from 1Password at request time (`onepassword`).
+        opRef:
+          type: string
+          nullable: true
+          description: >-
+            1Password secret reference (`op://vault/item/field`). Only set when
+            `valueSource` is `onepassword`.
+        hostPattern:
+          type: string
+        pathPattern:
+          type: string
+          nullable: true
+        injectionConfig:
+          $ref: '#/components/schemas/InjectionConfig'
+        metadata:
+          type: object
+          nullable: true
+          description: >-
+            Type-specific metadata (e.g. `authMode` for `anthropic`/`openai`
+            secrets, 1Password display labels).
+        scope:
+          type: string
+          enum:
+            - project
+            - organization
+          description: >-
+            Project lists include inherited organization secrets; use this to
+            tell them apart.
+        typeLabel:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    InjectionConfig:
+      nullable: true
+      description: >
+        How the gateway injects this secret into matching outbound requests
+        (generic secrets only). Exactly one variant:
+
+
+        - **Header** — `{ "headerName": "Authorization", "valueFormat": "Bearer
+        {value}" }`
+
+        - **Query parameter** — `{ "paramName": "key", "paramFormat": "{value}"
+        }`
+
+        - **URL path template** — `{ "pathTemplate": "/bot{value}" }` (must
+        start with `/` and contain `{value}` exactly once)
+
+        - **URL path regex** — `{ "pathRegex": "^/bot([^/]+)",
+        "pathReplacement": "/bot{value}" }` (replacement must contain `{value}`)
+
+
+        Unknown or mixed keys are rejected.
+      oneOf:
+        - type: object
+          title: Header injection
+          required:
+            - headerName
+          properties:
+            headerName:
+              type: string
+              minLength: 1
+            valueFormat:
+              type: string
+              description: >-
+                Value template; `{value}` is replaced with the secret (default:
+                `{value}`).
+          additionalProperties: false
+        - type: object
+          title: Query parameter injection
+          required:
+            - paramName
+          properties:
+            paramName:
+              type: string
+              minLength: 1
+            paramFormat:
+              type: string
+              description: >-
+                Value template; `{value}` is replaced with the secret (default:
+                `{value}`).
+          additionalProperties: false
+        - type: object
+          title: URL path template injection
+          required:
+            - pathTemplate
+          properties:
+            pathTemplate:
+              type: string
+              description: >-
+                Path with a `{value}` hole, e.g. `/bot{value}`. Must start with
+                `/` and contain `{value}` exactly once.
+          additionalProperties: false
+        - type: object
+          title: URL path regex injection
+          required:
+            - pathRegex
+            - pathReplacement
+          properties:
+            pathRegex:
+              type: string
+              description: Regular expression matched against the request path.
+            pathReplacement:
+              type: string
+              description: >-
+                Replacement with `$N` capture references and a `{value}` token
+                for the secret.
+          additionalProperties: false
+    PolicyRule:
+      type: object
+      description: >-
+        A policy rule. Custom (user-authored) rules carry their endpoint fields
+        (`hostPattern`/`pathPattern`/`method`); app-permission rules
+        (`metadata.source: app_permission`) omit them and are identified by
+        `metadata.provider` + `metadata.toolId`.
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        hostPattern:
+          type: string
+          description: Custom rules only; absent on app-permission rules.
+        pathPattern:
+          type: string
+          nullable: true
+          description: Custom rules only; absent on app-permission rules.
+        method:
+          type: string
+          nullable: true
+          enum:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+            - DELETE
+            - null
+          description: Custom rules only; absent on app-permission rules.
+        action:
+          type: string
+          enum:
+            - block
+            - rate_limit
+            - manual_approval
+            - allow
+        enabled:
+          type: boolean
+        agentId:
+          type: string
+          nullable: true
+        rateLimit:
+          type: integer
+          nullable: true
+        rateLimitWindow:
+          type: string
+          nullable: true
+          enum:
+            - minute
+            - hour
+            - day
+            - null
+        scope:
+          type: string
+          enum:
+            - project
+            - organization
+          description: >-
+            Project lists include inherited organization rules; use this to tell
+            them apart.
+        metadata:
+          type: object
+          nullable: true
+          description: >-
+            Set on rules generated by app permissions (`source: app_permission`,
+            plus `provider` and `toolId`). Null for custom rules.
+        conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleCondition'
+        createdAt:
+          type: string
+          format: date-time
+    RuleCondition:
+      type: object
+      description: >-
+        A condition that must match for the rule to apply. Conditions inspect
+        the request body to enable fine-grained filtering beyond
+        host/path/method.
+      required:
+        - target
+        - operator
+        - value
+      properties:
+        target:
+          type: string
+          enum:
+            - body
+          description: What part of the request to inspect.
+        operator:
+          type: string
+          enum:
+            - contains
+          description: How to match the value against the target.
+        value:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          description: The string to match against.
+        key:
+          type: string
+          maxLength: 500
+          description: Optional JSON key path within the body to scope the match.
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+    Project:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    App:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        available:
+          type: boolean
+        connectionType:
+          type: string
+          enum:
+            - oauth
+            - credentials_import
+            - api_key
+            - cloud_only
+        configurable:
+          type: boolean
+        config:
+          type: object
+          nullable: true
+          properties:
+            hasCredentials:
+              type: boolean
+            enabled:
+              type: boolean
+        connections:
+          type: array
+          description: All of the provider's connections in the current project.
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              label:
+                type: string
+                nullable: true
+              status:
+                type: string
+              scopes:
+                type: array
+                items:
+                  type: string
+              connectedAt:
+                type: string
+                format: date-time
+        credentialStubs:
+          type: array
+          description: >-
+            Local credential stub files some MCP servers need before they can
+            start (secrets replaced with `onecli-managed` placeholders).
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+                description: >-
+                  Full destination path (e.g.
+                  `~/.config/gcloud/application_default_credentials.json`).
+              content:
+                type: object
+                description: Stub file content with `onecli-managed` sentinel values.
+    AppConnection:
+      type: object
+      properties:
+        id:
+          type: string
+        provider:
+          type: string
+        label:
+          type: string
+          nullable: true
+          description: Display label extracted from metadata (e.g., email address)
+        status:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
+        scope:
+          type: string
+          enum:
+            - project
+            - organization
+          description: >-
+            Project lists include inherited organization connections; use this
+            to tell them apart.
+        metadata:
+          type: object
+          nullable: true
+          description: >-
+            Provider metadata captured at connect time (e.g. account email or
+            username).
+        connectedAt:
+          type: string
+          format: date-time
+    PermissionState:
+      type: object
+      properties:
+        permission:
+          type: string
+          enum:
+            - allow
+            - manual_approval
+            - block
+        conditions:
+          type: array
+          items:
+            type: object
+    AppPermissionStates:
+      type: object
+      description: Layered app-permission states for a provider.
+      properties:
+        defaults:
+          type: object
+          description: Tool states from the all-agents layer (tool ID → state).
+          additionalProperties:
+            $ref: '#/components/schemas/PermissionState'
+        byAgent:
+          type: object
+          description: >-
+            Per-agent override layers (agent ID → tool ID → state). Always empty
+            at the organization scope, where rules are agent-less.
+          additionalProperties:
+            type: object
+            additionalProperties:
+              $ref: '#/components/schemas/PermissionState'
+    PermissionChange:
+      type: object
+      required:
+        - toolId
+        - permission
+      properties:
+        toolId:
+          type: string
+          minLength: 1
+        permission:
+          type: string
+          enum:
+            - allow
+            - manual_approval
+            - block
+    ProjectPermissionChange:
+      type: object
+      required:
+        - toolId
+        - permission
+      properties:
+        toolId:
+          type: string
+          minLength: 1
+        permission:
+          type: string
+          enum:
+            - allow
+            - manual_approval
+            - block
+            - inherit
+          description: >-
+            `inherit` is only valid together with `agentId`: it removes the
+            agent's override so the tool falls back to the all-agents setting.
+    AppTool:
+      type: object
+      description: >-
+        One operation in an app's permission catalog, by identity. The endpoint
+        mapping behind a tool is internal; permission changes reference the tool
+        ID and the server resolves the rest.
+      properties:
+        id:
+          type: string
+          description: The tool ID that permission changes reference.
+        name:
+          type: string
+        description:
+          type: string
+    AppToolGroup:
+      type: object
+      properties:
+        category:
+          type: string
+          enum:
+            - read
+            - write
+        tools:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppTool'
+        wildcard:
+          $ref: '#/components/schemas/AppTool'
+          description: >-
+            Optional wildcard tool covering the whole group ("all read/write
+            operations").
+    PermissionDefinition:
+      type: object
+      description: >-
+        An app's static tool catalog — the tool IDs that the permissions
+        endpoints operate on.
+      properties:
+        provider:
+          type: string
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppToolGroup'
+    BlocklistHostState:
+      type: object
+      description: State of one blocklist entry — a predefined host or a custom rule.
+      properties:
+        hostId:
+          type: string
+        ruleId:
+          type: string
+          nullable: true
+          description: >-
+            The backing rule ID, or null when a predefined host has never been
+            activated.
+        enabled:
+          type: boolean
+        custom:
+          type: boolean
+          description: True for custom rules, false for the app's predefined hosts.
+        name:
+          type: string
+        hostPattern:
+          type: string
+        scope:
+          type: string
+          nullable: true
+          enum:
+            - project
+            - organization
+            - null
+    VaultConnection:
+      type: object
+      properties:
+        id:
+          type: string
+        provider:
+          type: string
+          description: External vault provider (e.g. `onepassword`).
+        status:
+          type: string
+        name:
+          type: string
+          nullable: true
+        lastConnectedAt:
+          type: string
+          format: date-time
+          nullable: true
+    ResourceCounts:
+      type: object
+      properties:
+        agents:
+          type: integer
+        apps:
+          type: integer
+          description: >-
+            Connected app connections (including inherited organization
+            connections).
+        llms:
+          type: integer
+          description: Non-generic secrets (LLM keys).
+        secrets:
+          type: integer
+          description: Generic secrets.
+    PartnerOrg:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+            - unclaimed
+            - claimed
+            - detached
+          description: >-
+            Whether the organization has been claimed by a customer, or detached
+            from the partner.
+        claimedByEmail:
+          type: string
+          nullable: true
+          description: Email of the customer who claimed the organization, if claimed.
+        claimedAt:
+          type: string
+          format: date-time
+          nullable: true
+        projects:
+          type: array
+          items:
+            $ref: '#/components/schemas/Project'
+    CreatePartnerOrgResponse:
+      type: object
+      description: >-
+        Returned once when an organization is created. These tokens are never
+        shown again.
+      properties:
+        organizationId:
+          type: string
+        projectId:
+          type: string
+        orgApiKey:
+          type: string
+          description: Organization-scoped API key (`oc_org_…`).
+        projectApiKey:
+          type: string
+          description: Project-scoped API key for the default project.
+        agentToken:
+          type: string
+          description: Access token for the default agent.
+        claimUrl:
+          type: string
+          description: Link the customer opens to claim ownership.
+    RotateTokensResponse:
+      type: object
+      properties:
+        orgApiKey:
+          type: string
+        projectApiKey:
+          type: string
+    PartnerMember:
+      type: object
+      properties:
+        userId:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum:
+            - owner
+            - admin
+            - member
+          description: >-
+            `owner` (one per partner, set at creation), `admin` (manages
+            members), or `member`.
+        createdAt:
+          type: string
+          format: date-time
+    Budget:
+      type: object
+      properties:
+        secretId:
+          type: string
+          description: The partner LLM key this budget caps.
+        organizationId:
+          type: string
+        limitCents:
+          type: integer
+          description: Spend ceiling in US cents (e.g. `500` = $5.00).
+          example: 500
+        period:
+          type: string
+          enum:
+            - monthly
+            - total
+        spentCents:
+          type: integer
+          description: >-
+            Spend so far this period, in US cents. Updates within a few seconds
+            of usage.
+          example: 320
+    ClaimLinkResponse:
+      type: object
+      properties:
+        claimUrl:
+          type: string
+    PartnerLinkStatus:
+      type: object
+      properties:
+        partnerManaged:
+          type: boolean
+          description: True if the organization was created by a partner.
+        detached:
+          type: boolean
+          description: True if the organization has detached from its partner.
+    ProvisionResult:
+      type: object
+      description: >-
+        Returned once when a user is provisioned. The API key is shown only
+        here.
+      properties:
+        id:
+          type: string
+          description: Provision record ID.
+        userId:
+          type: string
+          description: Placeholder user ID (becomes the real user after the claim).
+        projectId:
+          type: string
+          description: Pre-created project ID.
+        apiKey:
+          type: string
+          description: Project-scoped API key (`oc_…`), usable immediately.
+        claimUrl:
+          type: string
+          description: Link the user opens to claim the account.
+        expiresAt:
+          type: string
+          format: date-time
+          description: When the unclaimed provision expires (7 days from creation).
+  parameters:
+    agentId:
+      name: agentId
+      in: path
+      required: true
+      schema:
+        type: string
+    secretId:
+      name: secretId
+      in: path
+      required: true
+      schema:
+        type: string
+    ruleId:
+      name: ruleId
+      in: path
+      required: true
+      schema:
+        type: string
+    provider:
+      name: provider
+      in: path
+      required: true
+      schema:
+        type: string
+      description: App provider identifier (e.g., `gmail`, `github`, `jira`)
+    projectId:
+      name: projectId
+      in: path
+      required: true
+      schema:
+        type: string
+    connectionId:
+      name: connectionId
+      in: path
+      required: true
+      schema:
+        type: string
+    providerQuery:
+      name: provider
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Filter results to a single provider (e.g. `gmail`, `github`)
+    blocklistRuleId:
+      name: ruleId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Blocklist rule ID (from the blocklist state's `ruleId` field)
+    orgId:
+      name: orgId
+      in: path
+      required: true
+      schema:
+        type: string
+    userId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: ID of a partner member (the user).
+tags:
+  - name: Agents
+    description: Manage agents and their access tokens, secrets, and configuration.
+  - name: Secrets
+    description: Manage credentials that the gateway injects into outbound requests.
+  - name: Rules
+    description: >-
+      Manage policy rules that control how agents interact with external
+      services.
+  - name: Approvals
+    description: >-
+      Long-poll for pending manual-approval requests and submit approve/deny
+      decisions.
+  - name: User
+    description: Manage your user profile and API keys.
+  - name: Projects
+    description: >-
+      Manage projects within your organization. Requires admin role for
+      create/update and owner role for delete. Cloud only.
+  - name: Team
+    description: Provision team members programmatically. Requires admin role. Cloud only.
+  - name: Apps
+    description: >-
+      Manage app connections (OAuth and direct credentials), BYOC configuration,
+      permission catalogs, and blocklists.
+  - name: Connections
+    description: App connections as a top-level resource.
+  - name: Utility
+    description: Health check and project resource summaries.
+  - name: Agent Setup
+    description: >-
+      Endpoints agents and orchestrators use to bootstrap gateway access
+      (container config, credential stubs, gateway skill).
+  - name: Migration
+    description: Migrate data from a self-hosted instance to OneCLI Cloud.
+  - name: Organization Settings
+    description: >-
+      Organization-wide policy settings. Available on OneCLI Cloud and
+      self-hosted Enterprise.
+  - name: Organization Secrets
+    description: >-
+      Manage secrets at the organization level. Organization secrets apply
+      across all projects. Available on OneCLI Cloud and self-hosted Enterprise.
+  - name: Organization Rules
+    description: >-
+      Manage policy rules at the organization level. Organization rules apply
+      across all projects. Available on OneCLI Cloud and self-hosted Enterprise.
+  - name: Organization Connections
+    description: >-
+      Manage app connections at the organization level. Available on OneCLI
+      Cloud and self-hosted Enterprise.
+  - name: Organization App Config
+    description: >-
+      Connect apps (OAuth and direct credentials) and manage BYOC app
+      configuration at the organization level. Available on OneCLI Cloud and
+      self-hosted Enterprise.
+  - name: Organization Approvals
+    description: >-
+      Long-poll for manual-approval requests across every project in the
+      organization. Available on OneCLI Cloud and self-hosted Enterprise.
+  - name: Partner Organizations
+    description: >-
+      Create and manage customer organizations as a partner. Requires a Partner
+      API key. Cloud only.
+  - name: Partner Projects
+    description: Manage projects within an unclaimed partner organization. Cloud only.
+  - name: Partner Secrets
+    description: >-
+      Manage partner-level secrets inherited by every organization you manage.
+      Cloud only.
+  - name: Partner Budgets
+    description: >-
+      Cap how much an organization can spend on a partner LLM key. Owner or
+      admin only. Cloud only.
+  - name: Partner Members
+    description: >-
+      Manage who can sign in to your partner portal. Owner or admin only. Cloud
+      only.
+  - name: Organization Partner
+    description: Inspect and detach an organization's partner relationship. Cloud only.
+paths:
+  /agents:
+    get:
+      operationId: listAgents
+      summary: List agents
+      description: >-
+        Returns all agents in the current project with secret and connection
+        counts.
+      tags:
+        - Agents
+      responses:
+        '200':
+          description: List of agents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Agent'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: createAgent
+      summary: Create an agent
+      description: >
+        Creates a new agent in the current project. The identifier must be
+        lowercase alphanumeric with hyphens, starting with a letter or number
+        (max 50 chars).
+
+
+        The response does not include the agent's access token — read it from
+        `GET /agents` or regenerate it with `POST
+        /agents/{agentId}/regenerate-token`.
+      tags:
+        - Agents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - identifier
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                  description: Display name for the agent
+                  example: Claude Assistant
+                identifier:
+                  type: string
+                  pattern: ^[a-z0-9][a-z0-9-]{0,49}$
+                  description: Unique identifier (lowercase, alphanumeric, hyphens)
+                  example: claude-assistant
+                parentIdentifier:
+                  type: string
+                  pattern: ^[a-z0-9][a-z0-9-]{0,49}$
+                  description: >-
+                    Identifier of a parent agent. The new agent inherits the
+                    parent's secret mode, secret assignments, and app-connection
+                    assignments.
+                  example: orchestrator
+      responses:
+        '201':
+          description: Agent created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  identifier:
+                    type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Agent with this identifier already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /agents/default:
+    get:
+      operationId: getDefaultAgent
+      summary: Get default agent
+      description: Returns the default agent for the current project.
+      tags:
+        - Agents
+      responses:
+        '200':
+          description: Default agent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        '404':
+          description: No default agent found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /agents/{agentId}:
+    patch:
+      operationId: renameAgent
+      summary: Rename an agent
+      tags:
+        - Agents
+      parameters:
+        - $ref: '#/components/parameters/agentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                  example: Production Agent
+      responses:
+        '200':
+          description: Agent renamed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteAgent
+      summary: Delete an agent
+      tags:
+        - Agents
+      parameters:
+        - $ref: '#/components/parameters/agentId'
+      responses:
+        '204':
+          description: Agent deleted
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /agents/{agentId}/set-default:
+    post:
+      operationId: setDefaultAgent
+      summary: Set default agent
+      description: Marks the specified agent as the project's default agent.
+      tags:
+        - Agents
+      parameters:
+        - $ref: '#/components/parameters/agentId'
+      responses:
+        '200':
+          description: Default agent updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /agents/{agentId}/regenerate-token:
+    post:
+      operationId: regenerateAgentToken
+      summary: Regenerate agent token
+      description: >-
+        Generates a new access token for the agent. The previous token is
+        immediately invalidated.
+      tags:
+        - Agents
+      parameters:
+        - $ref: '#/components/parameters/agentId'
+      responses:
+        '200':
+          description: New token generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /agents/{agentId}/secret-mode:
+    patch:
+      operationId: updateAgentSecretMode
+      summary: Update agent secret mode
+      description: >
+        Controls which secrets the agent can access:
+
+        - `all` — the agent can use every secret in the project.
+
+        - `selective` — only secrets explicitly assigned via `PUT
+        /agents/{agentId}/secrets`.
+      tags:
+        - Agents
+      parameters:
+        - $ref: '#/components/parameters/agentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - mode
+              properties:
+                mode:
+                  type: string
+                  enum:
+                    - all
+                    - selective
+      responses:
+        '200':
+          description: Secret mode updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+  /agents/{agentId}/secrets:
+    get:
+      operationId: getAgentSecrets
+      summary: List agent's assigned secrets
+      description: >-
+        Returns the IDs of secrets assigned to this agent (relevant when secret
+        mode is `selective`).
+      tags:
+        - Agents
+      parameters:
+        - $ref: '#/components/parameters/agentId'
+      responses:
+        '200':
+          description: List of secret IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+    put:
+      operationId: updateAgentSecrets
+      summary: Update agent's assigned secrets
+      description: Replaces the full list of secrets assigned to this agent.
+      tags:
+        - Agents
+      parameters:
+        - $ref: '#/components/parameters/agentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - secretIds
+              properties:
+                secretIds:
+                  type: array
+                  items:
+                    type: string
+                  description: Array of secret IDs to assign
+      responses:
+        '200':
+          description: Secrets updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+  /agents/granular-access:
+    get:
+      operationId: listAgentGranularAccess
+      summary: List granular-access policies
+      description: >
+        Read-only overview of every agent → connection assignment in the project
+        that carries a non-empty granular-access policy (e.g. GitHub repository
+        or Dropbox folder scoping). Unrestricted assignments are omitted.
+      tags:
+        - Agents
+      responses:
+        '200':
+          description: Granular-access entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    agentId:
+                      type: string
+                    agentName:
+                      type: string
+                    connectionId:
+                      type: string
+                    provider:
+                      type: string
+                    connectionLabel:
+                      type: string
+                      nullable: true
+                    policy:
+                      type: object
+                      description: >-
+                        Provider-specific session policy (e.g. allowed GitHub
+                        repositories or Dropbox folders).
+  /agents/{agentId}/connections:
+    get:
+      operationId: getAgentConnections
+      summary: List agent's app-connection assignments
+      description: >-
+        Returns the agent's app-connection assignments and their per-connection
+        granular-access policies.
+      tags:
+        - Agents
+      parameters:
+        - $ref: '#/components/parameters/agentId'
+      responses:
+        '200':
+          description: App-connection assignments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    appConnectionId:
+                      type: string
+                    sessionPolicy:
+                      type: object
+                      nullable: true
+                      description: >-
+                        Provider-specific granular-access policy, or null for
+                        unrestricted access.
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      operationId: updateAgentConnections
+      summary: Update agent's app-connection assignments
+      description: >-
+        Replaces the agent's app-connection assignments and their
+        granular-access policies.
+      tags:
+        - Agents
+      parameters:
+        - $ref: '#/components/parameters/agentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - connections
+              properties:
+                connections:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - appConnectionId
+                    properties:
+                      appConnectionId:
+                        type: string
+                      sessionPolicy:
+                        type: object
+                        nullable: true
+                        description: >-
+                          Provider-specific granular-access policy (validated
+                          per provider). Omit or null for unrestricted access.
+      responses:
+        '200':
+          description: Assignments updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /secrets:
+    get:
+      operationId: listSecrets
+      summary: List secrets
+      description: >-
+        Returns all secrets in the current project. Secret values are never
+        returned.
+      tags:
+        - Secrets
+      responses:
+        '200':
+          description: List of secrets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Secret'
+    post:
+      operationId: createSecret
+      summary: Create a secret
+      description: >
+        Creates a new secret. The gateway uses secrets to inject credentials
+        into outbound requests matching the host and path patterns.
+
+
+        - **anthropic** and **openai** types are auto-configured.
+
+        - **generic** type requires an `injectionConfig`.
+
+        - Instead of an inline `value`, a project secret can reference a
+        1Password field: set `valueSource` to `onepassword` and provide `opRef`.
+        The gateway resolves the value at request time via the project's
+        1Password vault connection.
+      tags:
+        - Secrets
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - type
+                - hostPattern
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                  example: Anthropic Production
+                type:
+                  type: string
+                  enum:
+                    - anthropic
+                    - openai
+                    - generic
+                valueSource:
+                  type: string
+                  enum:
+                    - inline
+                    - onepassword
+                  default: inline
+                value:
+                  type: string
+                  minLength: 1
+                  maxLength: 10000
+                  description: >-
+                    The secret value (API key, token, etc.). Required unless
+                    `valueSource` is `onepassword`.
+                opRef:
+                  type: string
+                  description: >-
+                    1Password secret reference (`op://vault/item/field`).
+                    Required when `valueSource` is `onepassword`.
+                opDisplay:
+                  type: object
+                  description: >-
+                    Human-readable labels of the picked 1Password
+                    vault/item/field, for display only.
+                  properties:
+                    vault:
+                      type: string
+                    item:
+                      type: string
+                    field:
+                      type: string
+                hostPattern:
+                  type: string
+                  description: >-
+                    Hostname pattern to match (no `://`, `/`, or spaces). A `*.`
+                    wildcard is only allowed as a leading subdomain and must not
+                    cover a public suffix.
+                  example: api.anthropic.com
+                pathPattern:
+                  type: string
+                  maxLength: 1000
+                  description: Optional path pattern to match
+                injectionConfig:
+                  $ref: '#/components/schemas/InjectionConfig'
+      responses:
+        '201':
+          description: >-
+            Secret created. The response contains the core fields (`id`, `name`,
+            `type`, `valueSource`, `opRef`, `hostPattern`, `pathPattern`,
+            `createdAt`) plus a masked `preview` of inline values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecretCreated'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /secrets/{secretId}:
+    patch:
+      operationId: updateSecret
+      summary: Update a secret
+      description: >
+        Updates one or more fields on a secret. At least one field must be
+        provided.
+
+
+        Set `valueSource` to `onepassword` (with `opRef`) to switch the secret
+        to a 1Password-resolved value, or provide `value` to store an inline
+        value.
+      tags:
+        - Secrets
+      parameters:
+        - $ref: '#/components/parameters/secretId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                valueSource:
+                  type: string
+                  enum:
+                    - inline
+                    - onepassword
+                value:
+                  type: string
+                  minLength: 1
+                  maxLength: 10000
+                opRef:
+                  type: string
+                  description: >-
+                    1Password secret reference (`op://vault/item/field`).
+                    Required when `valueSource` is `onepassword`.
+                opDisplay:
+                  type: object
+                  properties:
+                    vault:
+                      type: string
+                    item:
+                      type: string
+                    field:
+                      type: string
+                hostPattern:
+                  type: string
+                pathPattern:
+                  type: string
+                  nullable: true
+                injectionConfig:
+                  $ref: '#/components/schemas/InjectionConfig'
+      responses:
+        '200':
+          description: Secret updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Validation error or no fields provided
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Secret not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteSecret
+      summary: Delete a secret
+      tags:
+        - Secrets
+      parameters:
+        - $ref: '#/components/parameters/secretId'
+      responses:
+        '204':
+          description: Secret deleted
+        '404':
+          description: Secret not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /rules:
+    get:
+      operationId: listRules
+      summary: List policy rules
+      description: Returns all policy rules for the current project.
+      tags:
+        - Rules
+      responses:
+        '200':
+          description: List of rules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyRule'
+    post:
+      operationId: createRule
+      summary: Create a policy rule
+      description: >
+        Creates a new policy rule. Rules control how agents interact with
+        external services:
+
+
+        - **block** — reject matching requests outright.
+
+        - **rate_limit** — allow up to N requests per time window. Requires
+        `rateLimit` and `rateLimitWindow`.
+
+        - **manual_approval** — hold matching requests for human approval before
+        forwarding.
+
+        - **allow** — explicitly allow matching requests (used to carve
+        exceptions in deny mode or shadow a broader rule).
+      tags:
+        - Rules
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - hostPattern
+                - action
+                - enabled
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                  example: Block destructive GitHub API calls
+                hostPattern:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+                  example: api.github.com
+                pathPattern:
+                  type: string
+                  maxLength: 1000
+                  example: /repos/*/delete
+                method:
+                  type: string
+                  enum:
+                    - GET
+                    - POST
+                    - PUT
+                    - PATCH
+                    - DELETE
+                action:
+                  type: string
+                  enum:
+                    - block
+                    - rate_limit
+                    - manual_approval
+                    - allow
+                enabled:
+                  type: boolean
+                agentId:
+                  type: string
+                  description: Scope rule to a specific agent (omit for all agents)
+                rateLimit:
+                  type: integer
+                  minimum: 1
+                  maximum: 1000000
+                  description: Required when action is `rate_limit`
+                rateLimitWindow:
+                  type: string
+                  enum:
+                    - minute
+                    - hour
+                    - day
+                  description: Required when action is `rate_limit`
+                conditions:
+                  type: array
+                  maxItems: 10
+                  items:
+                    $ref: '#/components/schemas/RuleCondition'
+      responses:
+        '201':
+          description: Rule created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyRule'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /rules/{ruleId}:
+    get:
+      operationId: getRule
+      summary: Get a policy rule
+      description: Returns a single policy rule by ID.
+      tags:
+        - Rules
+      parameters:
+        - $ref: '#/components/parameters/ruleId'
+      responses:
+        '200':
+          description: Rule details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyRule'
+        '404':
+          description: Rule not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      operationId: updateRule
+      summary: Update a policy rule
+      description: >-
+        Updates one or more fields on a rule. At least one field must be
+        provided.
+      tags:
+        - Rules
+      parameters:
+        - $ref: '#/components/parameters/ruleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                hostPattern:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+                pathPattern:
+                  type: string
+                  nullable: true
+                method:
+                  type: string
+                  nullable: true
+                  enum:
+                    - GET
+                    - POST
+                    - PUT
+                    - PATCH
+                    - DELETE
+                action:
+                  type: string
+                  enum:
+                    - block
+                    - rate_limit
+                    - manual_approval
+                    - allow
+                enabled:
+                  type: boolean
+                agentId:
+                  type: string
+                  nullable: true
+                rateLimit:
+                  type: integer
+                  nullable: true
+                  minimum: 1
+                  maximum: 1000000
+                rateLimitWindow:
+                  type: string
+                  nullable: true
+                  enum:
+                    - minute
+                    - hour
+                    - day
+                conditions:
+                  type: array
+                  nullable: true
+                  maxItems: 10
+                  items:
+                    $ref: '#/components/schemas/RuleCondition'
+      responses:
+        '200':
+          description: Rule updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Rule not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteRule
+      summary: Delete a policy rule
+      tags:
+        - Rules
+      parameters:
+        - $ref: '#/components/parameters/ruleId'
+      responses:
+        '204':
+          description: Rule deleted
+        '404':
+          description: Rule not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /rules/permissions/{provider}:
+    get:
+      operationId: getRulePermissions
+      summary: Get app permissions (project)
+      description: >
+        Returns the layered tool-level permission states for a provider at the
+        project scope: `defaults` holds the all-agents states, `byAgent` holds
+        per-agent override layers. Tool IDs come from the app's permission
+        definition (`GET /apps/{provider}/permission-definition`).
+      tags:
+        - Rules
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      responses:
+        '200':
+          description: Layered permission states
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppPermissionStates'
+    put:
+      operationId: setRulePermissions
+      summary: Set app permissions (project)
+      description: >
+        Updates tool-level permissions for a provider at the project scope.
+
+
+        Omit `agentId` to write the all-agents defaults. Pass `agentId` to write
+        one agent's override layer; there, the `inherit` permission removes the
+        agent's override for a tool so it falls back to the all-agents setting.
+      tags:
+        - Rules
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - changes
+              properties:
+                changes:
+                  type: array
+                  minItems: 1
+                  items:
+                    $ref: '#/components/schemas/ProjectPermissionChange'
+                conditions:
+                  type: array
+                  maxItems: 10
+                  items:
+                    $ref: '#/components/schemas/RuleCondition'
+                agentId:
+                  type: string
+                  minLength: 1
+                  description: >-
+                    Target one agent's override layer instead of the all-agents
+                    defaults.
+      responses:
+        '200':
+          description: Permissions updated
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Validation error, unknown provider, or unknown tool
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /rules/overlap/{provider}:
+    get:
+      operationId: getRuleOverlap
+      summary: Count overlapping custom rules (project)
+      description: >-
+        Counts custom project rules whose host patterns overlap the app's hosts
+        — rules that may interfere with the app's permission settings.
+      tags:
+        - Rules
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      responses:
+        '200':
+          description: Overlap count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+  /projects:
+    get:
+      operationId: listProjects
+      summary: List projects
+      description: >-
+        Returns all projects in the authenticated user's organization. Cloud
+        only.
+      tags:
+        - Projects
+      responses:
+        '200':
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+    post:
+      operationId: createProject
+      summary: Create a project
+      description: Creates a new project in the organization. Requires admin role.
+      tags:
+        - Projects
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 50
+                  example: Production
+      responses:
+        '201':
+          description: Project created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Project'
+                  - type: object
+                    properties:
+                      apiKey:
+                        type: string
+                        nullable: true
+                        description: >-
+                          Project-scoped API key (`oc_…`) for the new project,
+                          seeded for the creating user. Save it — it is only
+                          returned here.
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: A project with this slug already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /projects/{projectId}:
+    get:
+      operationId: getProject
+      summary: Get a project
+      description: Returns a single project by ID.
+      tags:
+        - Projects
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Project details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      operationId: updateProject
+      summary: Update a project
+      description: Updates a project's name and slug. Requires admin role.
+      tags:
+        - Projects
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 50
+      responses:
+        '200':
+          description: Project updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: A project with this slug already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteProject
+      summary: Delete a project
+      description: >
+        Permanently deletes a project and all its data (agents, secrets,
+        connections, rules, audit logs). Requires admin role. Cannot delete the
+        last project in the organization.
+      tags:
+        - Projects
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '204':
+          description: Project deleted
+        '400':
+          description: Cannot delete the only project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /team/provisions:
+    post:
+      operationId: provisionUser
+      summary: Provision a team member
+      description: >
+        Pre-creates a user account with its own project, a usable API key, a
+        default
+
+        agent, and a claim link. The API key works immediately, so agents can
+        make
+
+        requests before the user signs up. The user later opens the claim link
+        to bind
+
+        the account to their identity. Unclaimed provisions expire after 7 days
+        and are
+
+        cleaned up automatically.
+
+
+        Requires an admin or owner role. Cloud only.
+      tags:
+        - Team
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  type: string
+                  enum:
+                    - admin
+                    - member
+                  default: member
+                  description: Role the provisioned user will have in the organization.
+                skipOnboarding:
+                  type: boolean
+                  default: true
+                  description: Whether the user skips the onboarding wizard after claiming.
+      responses:
+        '201':
+          description: User provisioned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProvisionResult'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Insufficient permissions (requires admin or owner)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /user:
+    get:
+      operationId: getUser
+      summary: Get current user
+      description: Returns the profile of the authenticated user.
+      tags:
+        - User
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    patch:
+      operationId: updateUser
+      summary: Update user profile
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  email:
+                    type: string
+                  name:
+                    type: string
+  /user/api-key:
+    get:
+      operationId: getApiKey
+      summary: Get API key
+      description: >-
+        Returns the current API key for the authenticated user in the current
+        project.
+      tags:
+        - User
+      responses:
+        '200':
+          description: API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  apiKey:
+                    type: string
+  /user/api-key/regenerate:
+    post:
+      operationId: regenerateApiKey
+      summary: Regenerate API key
+      description: Generates a new API key, immediately invalidating the previous one.
+      tags:
+        - User
+      responses:
+        '200':
+          description: New API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  apiKey:
+                    type: string
+  /apps:
+    get:
+      operationId: listApps
+      summary: List apps
+      description: >-
+        Returns all available apps with their current configuration and
+        connection status.
+      tags:
+        - Apps
+      responses:
+        '200':
+          description: List of apps
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/App'
+  /apps/{provider}:
+    get:
+      operationId: getApp
+      summary: Get app details
+      description: >-
+        Returns detailed information about a specific app, including setup
+        instructions.
+      tags:
+        - Apps
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      responses:
+        '200':
+          description: App details
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/App'
+                  - type: object
+                    properties:
+                      hint:
+                        type: string
+                        description: Setup instructions or guidance
+        '404':
+          description: Unknown provider
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /apps/{provider}/authorize:
+    get:
+      operationId: authorizeApp
+      summary: Start OAuth flow
+      description: >
+        Redirects the user to the app's OAuth authorization page. After the user
+        authorizes, they are redirected back to the callback URL.
+
+
+        This endpoint is typically opened in a browser, not called from code.
+      tags:
+        - Apps
+      parameters:
+        - $ref: '#/components/parameters/provider'
+        - name: connectionId
+          in: query
+          schema:
+            type: string
+          description: Reconnect an existing connection instead of creating a new one
+        - name: agent_name
+          in: query
+          schema:
+            type: string
+          description: Agent name to associate with the connection
+      responses:
+        '302':
+          description: Redirect to OAuth provider
+        '400':
+          description: Provider not available or not configured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /apps/{provider}/connect:
+    post:
+      operationId: connectApp
+      summary: Connect app with credentials
+      description: >-
+        Connects an app using direct credentials (API key, service account,
+        etc.) rather than OAuth.
+      tags:
+        - Apps
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fields
+              properties:
+                fields:
+                  type: object
+                  additionalProperties:
+                    type: string
+                  description: Credential fields required by the app
+                  example:
+                    apiKey: sk-...
+                connectionId:
+                  type: string
+                  description: Reconnect an existing connection
+                label:
+                  type: string
+                  description: >-
+                    Display label for the connection. Defaults to a label
+                    derived from the credential metadata.
+                method:
+                  type: string
+                  description: >-
+                    Connection method to use for apps with multiple methods
+                    (e.g. OAuth primary + API-key alternate). An unrecognized
+                    value is rejected.
+      responses:
+        '200':
+          description: Connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Validation error or provider not available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /connections:
+    get:
+      operationId: listConnections
+      summary: List connections
+      description: >-
+        Returns the project's app connections (including inherited organization
+        connections) as a bare array. Filter with the `provider` query
+        parameter.
+      tags:
+        - Connections
+      parameters:
+        - $ref: '#/components/parameters/providerQuery'
+      responses:
+        '200':
+          description: List of connections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AppConnection'
+  /connections/{connectionId}:
+    patch:
+      operationId: renameConnection
+      summary: Rename a connection
+      description: Sets the display label of an app connection.
+      tags:
+        - Connections
+      parameters:
+        - $ref: '#/components/parameters/connectionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - label
+              properties:
+                label:
+                  type: string
+                  minLength: 1
+      responses:
+        '200':
+          description: Connection renamed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  provider:
+                    type: string
+                  status:
+                    type: string
+                  label:
+                    type: string
+                    nullable: true
+        '400':
+          description: Label is required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Connection not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: disconnectConnection
+      summary: Disconnect a connection
+      description: Permanently removes an app connection by ID.
+      tags:
+        - Connections
+      parameters:
+        - $ref: '#/components/parameters/connectionId'
+      responses:
+        '204':
+          description: Connection removed
+        '404':
+          description: Connection not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /apps/{provider}/config:
+    get:
+      operationId: getAppConfig
+      summary: Get app configuration
+      description: >-
+        Returns the non-secret configuration for a BYOC (Bring Your Own
+        Credentials) app.
+      tags:
+        - Apps
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      responses:
+        '200':
+          description: App configuration
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  settings:
+                    type: object
+                    additionalProperties:
+                      type: string
+                  hasCredentials:
+                    type: boolean
+                  enabled:
+                    type: boolean
+    post:
+      operationId: upsertAppConfig
+      summary: Set app configuration
+      description: >
+        Creates or updates the BYOC configuration for an app. Existing
+        connections may be disconnected when credentials change.
+
+
+        The accepted field names are defined per app (e.g.
+        `clientId`/`clientSecret` for OAuth apps; `appId`/`appSlug`/`privateKey`
+        for `github-app`). Unknown keys are stripped.
+      tags:
+        - Apps
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: string
+              description: Credential fields as defined by the app's configuration schema.
+              example:
+                clientId: 1234567890.apps.googleusercontent.com
+                clientSecret: GOCSPX-…
+      responses:
+        '201':
+          description: Configuration saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Provider does not support configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteAppConfig
+      summary: Delete app configuration
+      tags:
+        - Apps
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      responses:
+        '204':
+          description: Configuration deleted
+  /apps/{provider}/config/toggle:
+    patch:
+      operationId: toggleAppConfig
+      summary: Toggle app configuration
+      description: >-
+        Enables or disables a provider's BYOC configuration in the current
+        project.
+      tags:
+        - Apps
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - enabled
+              properties:
+                enabled:
+                  type: boolean
+      responses:
+        '200':
+          description: Configuration toggled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '404':
+          description: Configuration not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /apps/configured:
+    get:
+      operationId: listConfiguredApps
+      summary: List configured providers
+      description: >-
+        Returns provider IDs with an enabled BYOC configuration in the current
+        project.
+      tags:
+        - Apps
+      responses:
+        '200':
+          description: List of configured provider IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /apps/env-defaults:
+    get:
+      operationId: listEnvDefaultApps
+      summary: List providers with platform default credentials
+      description: >-
+        Returns provider IDs whose OAuth credentials are supplied by the
+        deployment's environment, so they work without BYOC configuration.
+      tags:
+        - Apps
+      responses:
+        '200':
+          description: List of provider IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /apps/permission-definitions:
+    get:
+      operationId: listPermissionDefinitions
+      summary: List app permission definitions
+      description: >
+        Returns the tool catalog of every app that has one — the read/write
+        groups and tool IDs that the permissions endpoints operate on. Global
+        data; works without a project context, so organization keys can call it
+        without `X-Project-Id`.
+      tags:
+        - Apps
+      responses:
+        '200':
+          description: Permission definitions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PermissionDefinition'
+  /apps/{provider}/permission-definition:
+    get:
+      operationId: getPermissionDefinition
+      summary: Get app permission definition
+      description: >
+        Returns the app's static tool catalog — the read/write groups and tool
+        IDs that the permissions endpoints (`/rules/permissions/{provider}` and
+        `/org/rules/permissions/{provider}`) operate on. Global data; works
+        without a project context, so organization keys can call it without
+        `X-Project-Id`.
+      tags:
+        - Apps
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      responses:
+        '200':
+          description: Permission definition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionDefinition'
+        '404':
+          description: Unknown provider or no permission definition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /apps/{provider}/blocklist:
+    get:
+      operationId: getBlocklist
+      summary: Get blocklist state
+      description: >-
+        Returns the blocklist state for a provider — the app's predefined hosts
+        (with their activation state) and any custom rules.
+      tags:
+        - Apps
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      responses:
+        '200':
+          description: Blocklist state
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BlocklistHostState'
+        '404':
+          description: Unknown provider
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: addBlocklistEntry
+      summary: Activate or add a blocklist entry
+      description: >
+        Provide either `{ hostId }` to activate one of the app's predefined
+        blocklist hosts, or `{ name, hostPattern }` to add a custom blocklist
+        rule.
+      tags:
+        - Apps
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  title: Activate predefined host
+                  required:
+                    - hostId
+                  properties:
+                    hostId:
+                      type: string
+                - type: object
+                  title: Add custom rule
+                  required:
+                    - name
+                    - hostPattern
+                  properties:
+                    name:
+                      type: string
+                    hostPattern:
+                      type: string
+      responses:
+        '201':
+          description: Blocklist entry created or activated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlocklistHostState'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /apps/{provider}/blocklist/{ruleId}:
+    patch:
+      operationId: toggleBlocklistRule
+      summary: Toggle a blocklist rule
+      tags:
+        - Apps
+      parameters:
+        - $ref: '#/components/parameters/provider'
+        - $ref: '#/components/parameters/blocklistRuleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - enabled
+              properties:
+                enabled:
+                  type: boolean
+      responses:
+        '200':
+          description: Rule toggled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+    delete:
+      operationId: removeBlocklistRule
+      summary: Remove a blocklist rule
+      tags:
+        - Apps
+      parameters:
+        - $ref: '#/components/parameters/provider'
+        - $ref: '#/components/parameters/blocklistRuleId'
+      responses:
+        '204':
+          description: Rule removed
+  /health:
+    get:
+      operationId: getHealth
+      summary: Health check
+      description: Returns the API's status and version. No authentication required.
+      security: []
+      tags:
+        - Utility
+      responses:
+        '200':
+          description: Service health
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  version:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+  /counts:
+    get:
+      operationId: getCounts
+      summary: Get resource counts
+      description: Returns the current project's resource totals.
+      tags:
+        - Utility
+      responses:
+        '200':
+          description: Resource counts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceCounts'
+  /vaults:
+    get:
+      operationId: listVaults
+      summary: List vault connections
+      description: >-
+        Returns the project's external vault connections (e.g. 1Password). Vault
+        pairing and disconnect are performed on the gateway process, not this
+        API.
+      tags:
+        - Utility
+      responses:
+        '200':
+          description: List of vault connections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VaultConnection'
+  /container-config:
+    get:
+      operationId: getContainerConfig
+      summary: Get container configuration
+      description: >
+        Returns everything an agent orchestrator needs to route a container (or
+        local process) through the OneCLI gateway: proxy environment variables,
+        the gateway CA certificate, and any credential stub files. The server
+        controls all env var names, values, and paths.
+      tags:
+        - Agent Setup
+      parameters:
+        - name: agent
+          in: query
+          required: false
+          schema:
+            type: string
+          description: >-
+            Agent identifier. Omit to use the project's default agent (created
+            on demand).
+      responses:
+        '200':
+          description: Container configuration
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  env:
+                    type: object
+                    additionalProperties:
+                      type: string
+                    description: >-
+                      Environment variables to set (proxy URLs, CA trust,
+                      credential placeholders).
+                  caCertificate:
+                    type: string
+                    description: PEM-encoded gateway CA certificate.
+                  caCertificateContainerPath:
+                    type: string
+                  credentialStubs:
+                    type: array
+                    description: >-
+                      Present when the agent needs local credential stub files
+                      (e.g. Codex OAuth).
+                    items:
+                      type: object
+                      properties:
+                        containerPath:
+                          type: string
+                        content:
+                          type: string
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+        '404':
+          description: 'No agent with the given identifier exists (`code: AGENT_NOT_FOUND`)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: CA certificate not available (gateway not started yet)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /credential-stubs:
+    get:
+      operationId: listCredentialStubs
+      summary: List credential stub agents
+      description: Returns the agent frameworks that have credential stubs available.
+      tags:
+        - Agent Setup
+      responses:
+        '200':
+          description: Available agents
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agents:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - codex
+  /credential-stubs/{agent}:
+    get:
+      operationId: getCredentialStub
+      summary: Get a credential stub
+      description: >-
+        Returns a placeholder credential file for the given agent framework
+        (currently `codex`). The gateway injects real credentials at request
+        time.
+      tags:
+        - Agent Setup
+      parameters:
+        - name: agent
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Credential stub
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agent:
+                    type: string
+                  filePath:
+                    type: string
+                    example: ~/.codex/auth.json
+                  content:
+                    type: string
+                  authMode:
+                    type: string
+                    enum:
+                      - api-key
+                      - oauth
+                  permissions:
+                    type: string
+                    example: '0600'
+        '404':
+          description: No credential stub for this agent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /skill/gateway:
+    get:
+      operationId: getGatewaySkill
+      summary: Get the gateway skill
+      description: >-
+        Returns the gateway skill as Markdown — instructions that teach a coding
+        agent how to work behind the OneCLI gateway. Pass `agent_framework` for
+        framework-specific content.
+      tags:
+        - Agent Setup
+      parameters:
+        - name: agent_framework
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Agent framework name (e.g. `claude`, `codex`).
+      responses:
+        '200':
+          description: Skill content
+          content:
+            text/markdown:
+              schema:
+                type: string
+  /migrate/export:
+    post:
+      operationId: migrateExport
+      summary: Export data to OneCLI Cloud
+      description: >
+        Exports the current self-hosted instance's data (secrets, agents,
+        agent-secret assignments, rules) directly to OneCLI Cloud over HTTPS.
+        Secrets are decrypted server-side and transmitted to Cloud; plaintext
+        never reaches the caller.
+
+
+        Only available on self-hosted instances — Cloud returns 404.
+      tags:
+        - Migration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - cloudApiKey
+              properties:
+                cloudApiKey:
+                  type: string
+                  description: OneCLI Cloud API key to import into.
+                cloudUrl:
+                  type: string
+                  format: uri
+                  description: >-
+                    Override the Cloud API URL (default:
+                    `https://api.onecli.sh`).
+      responses:
+        '200':
+          description: Migration result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  imported:
+                    type: object
+                    properties:
+                      secrets:
+                        type: integer
+                      agents:
+                        type: integer
+                      agentSecrets:
+                        type: integer
+                      rules:
+                        type: integer
+                  skipped:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                        name:
+                          type: string
+                        reason:
+                          type: string
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /approvals/pending:
+    get:
+      operationId: listPendingApprovals
+      summary: List pending approvals
+      description: >
+        Long-polls for manual-approval requests awaiting a decision in the
+        current project. Returns immediately when any are pending, otherwise
+        holds the connection open (up to `timeoutSeconds`) until one arrives or
+        the poll times out.
+
+
+        Authenticate with a project API key, or an organization key plus an
+        `X-Project-Id` header. Submit each decision to `POST
+        /approvals/{id}/decision`.
+      tags:
+        - Approvals
+      parameters:
+        - name: exclude
+          in: query
+          required: false
+          schema:
+            type: string
+          description: >-
+            Comma-separated approval IDs to skip (already being handled) so the
+            poll can hold open for genuinely new requests.
+      responses:
+        '200':
+          description: Pending approval requests in the project
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requests:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PendingApproval'
+                  timeoutSeconds:
+                    type: integer
+                    description: How long the server holds the long-poll open, in seconds.
+        '401':
+          description: >-
+            No project context (send an `X-Project-Id` header with an
+            organization key, or use a project key)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /approvals/{id}/decision:
+    post:
+      operationId: submitApprovalDecision
+      summary: Submit an approval decision
+      description: >
+        Approve or deny a pending manual-approval request. Approving forwards
+        the held request to its upstream service; denying blocks it. Scope the
+        call to the request's project with a project API key or an
+        `X-Project-Id` header.
+      tags:
+        - Approvals
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The approval ID from `GET /approvals/pending`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - decision
+              properties:
+                decision:
+                  type: string
+                  enum:
+                    - approve
+                    - deny
+                  description: >-
+                    Whether to forward the held request (`approve`) or block it
+                    (`deny`).
+      responses:
+        '200':
+          description: Decision recorded and the held request released
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '404':
+          description: No pending approval with that ID in this project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '410':
+          description: >-
+            The approval expired before the decision was submitted (it was
+            auto-denied)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /org/approvals/pending:
+    get:
+      operationId: listOrgPendingApprovals
+      summary: List pending approvals across the organization
+      description: >
+        Long-polls for manual-approval requests awaiting a decision across
+        **every** project in the organization. Returns immediately when any are
+        pending, otherwise holds the connection open (up to `timeoutSeconds`)
+        until one arrives or the poll times out.
+
+
+        Each request carries its own `projectId`; submit the decision to the
+        existing `POST /approvals/{id}/decision` route with that project's
+        `X-Project-Id`. Authenticate with an organization API key (`oc_org_...`)
+        — the poll itself sends no `X-Project-Id`. Requires the admin or owner
+        role. Available on OneCLI Cloud and self-hosted Enterprise.
+      tags:
+        - Organization Approvals
+      parameters:
+        - name: exclude
+          in: query
+          required: false
+          schema:
+            type: string
+          description: >-
+            Comma-separated approval IDs to skip (already being handled) so the
+            poll can hold open for genuinely new requests.
+      responses:
+        '200':
+          description: Pending approval requests across the organization
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requests:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PendingApproval'
+                  timeoutSeconds:
+                    type: integer
+                    description: How long the server holds the long-poll open, in seconds.
+        '403':
+          description: >-
+            Insufficient permissions (requires an organization API key with the
+            admin or owner role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /org/secrets:
+    get:
+      operationId: listOrgSecrets
+      summary: List organization secrets
+      description: >-
+        Returns all secrets scoped to the organization. Secret values are never
+        returned. Available on OneCLI Cloud and self-hosted Enterprise. Requires
+        the admin or owner role.
+      tags:
+        - Organization Secrets
+      responses:
+        '200':
+          description: List of organization secrets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Secret'
+    post:
+      operationId: createOrgSecret
+      summary: Create an organization secret
+      description: >
+        Creates a new secret at the organization level. Organization secrets
+        apply across all projects. Requires admin role. Available on OneCLI
+        Cloud and self-hosted Enterprise.
+
+
+        1Password-sourced values (`valueSource: onepassword`) are project-only
+        and rejected here — organization secrets must carry an inline `value`.
+      tags:
+        - Organization Secrets
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - type
+                - value
+                - hostPattern
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                  example: Shared Anthropic Key
+                type:
+                  type: string
+                  enum:
+                    - anthropic
+                    - openai
+                    - generic
+                value:
+                  type: string
+                  minLength: 1
+                  maxLength: 10000
+                  description: The secret value (API key, token, etc.)
+                hostPattern:
+                  type: string
+                  description: Hostname pattern to match
+                  example: api.anthropic.com
+                pathPattern:
+                  type: string
+                  maxLength: 1000
+                injectionConfig:
+                  $ref: '#/components/schemas/InjectionConfig'
+      responses:
+        '201':
+          description: Secret created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecretCreated'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Insufficient permissions (requires admin role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /org/secrets/{secretId}:
+    patch:
+      operationId: updateOrgSecret
+      summary: Update an organization secret
+      description: >-
+        Updates one or more fields on an organization secret. Requires admin
+        role. Available on OneCLI Cloud and self-hosted Enterprise.
+      tags:
+        - Organization Secrets
+      parameters:
+        - $ref: '#/components/parameters/secretId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                value:
+                  type: string
+                  minLength: 1
+                  maxLength: 10000
+                hostPattern:
+                  type: string
+                pathPattern:
+                  type: string
+                  nullable: true
+                injectionConfig:
+                  $ref: '#/components/schemas/InjectionConfig'
+      responses:
+        '200':
+          description: Secret updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Validation error or no fields provided
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Secret not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteOrgSecret
+      summary: Delete an organization secret
+      description: >-
+        Requires admin role. Available on OneCLI Cloud and self-hosted
+        Enterprise.
+      tags:
+        - Organization Secrets
+      parameters:
+        - $ref: '#/components/parameters/secretId'
+      responses:
+        '204':
+          description: Secret deleted
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Secret not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /org/rules:
+    get:
+      operationId: listOrgRules
+      summary: List organization rules
+      description: >-
+        Returns all policy rules scoped to the organization. Available on OneCLI
+        Cloud and self-hosted Enterprise. Requires the admin or owner role.
+      tags:
+        - Organization Rules
+      responses:
+        '200':
+          description: List of organization rules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyRule'
+    post:
+      operationId: createOrgRule
+      summary: Create an organization rule
+      description: >
+        Creates a new policy rule at the organization level. Organization rules
+        apply across all projects and cannot be assigned to specific agents.
+        Requires admin role. Available on OneCLI Cloud and self-hosted
+        Enterprise.
+      tags:
+        - Organization Rules
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - hostPattern
+                - action
+                - enabled
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                hostPattern:
+                  type: string
+                pathPattern:
+                  type: string
+                method:
+                  type: string
+                  enum:
+                    - GET
+                    - POST
+                    - PUT
+                    - PATCH
+                    - DELETE
+                action:
+                  type: string
+                  enum:
+                    - block
+                    - rate_limit
+                    - manual_approval
+                    - allow
+                enabled:
+                  type: boolean
+                rateLimit:
+                  type: integer
+                  minimum: 1
+                rateLimitWindow:
+                  type: string
+                  enum:
+                    - minute
+                    - hour
+                    - day
+                conditions:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/RuleCondition'
+      responses:
+        '201':
+          description: Rule created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyRule'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /org/rules/{ruleId}:
+    get:
+      operationId: getOrgRule
+      summary: Get an organization rule
+      description: >-
+        Available on OneCLI Cloud and self-hosted Enterprise. Requires the admin
+        or owner role.
+      tags:
+        - Organization Rules
+      parameters:
+        - $ref: '#/components/parameters/ruleId'
+      responses:
+        '200':
+          description: Rule details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyRule'
+        '404':
+          description: Rule not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      operationId: updateOrgRule
+      summary: Update an organization rule
+      description: >-
+        Requires admin role. Available on OneCLI Cloud and self-hosted
+        Enterprise.
+      tags:
+        - Organization Rules
+      parameters:
+        - $ref: '#/components/parameters/ruleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                hostPattern:
+                  type: string
+                pathPattern:
+                  type: string
+                  nullable: true
+                method:
+                  type: string
+                  enum:
+                    - GET
+                    - POST
+                    - PUT
+                    - PATCH
+                    - DELETE
+                  nullable: true
+                action:
+                  type: string
+                  enum:
+                    - block
+                    - rate_limit
+                    - manual_approval
+                    - allow
+                enabled:
+                  type: boolean
+                rateLimit:
+                  type: integer
+                  nullable: true
+                rateLimitWindow:
+                  type: string
+                  enum:
+                    - minute
+                    - hour
+                    - day
+                  nullable: true
+                conditions:
+                  type: array
+                  nullable: true
+                  items:
+                    $ref: '#/components/schemas/RuleCondition'
+      responses:
+        '200':
+          description: Rule updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Rule not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteOrgRule
+      summary: Delete an organization rule
+      description: >-
+        Requires admin role. Available on OneCLI Cloud and self-hosted
+        Enterprise.
+      tags:
+        - Organization Rules
+      parameters:
+        - $ref: '#/components/parameters/ruleId'
+      responses:
+        '204':
+          description: Rule deleted
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Rule not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /org/connections:
+    get:
+      operationId: listOrgConnections
+      summary: List organization connections
+      description: >-
+        Returns all app connections scoped to the organization. Filter with the
+        `provider` query parameter. Requires admin role. Available on OneCLI
+        Cloud and self-hosted Enterprise.
+      tags:
+        - Organization Connections
+      parameters:
+        - $ref: '#/components/parameters/providerQuery'
+      responses:
+        '200':
+          description: List of organization connections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AppConnection'
+  /org/connections/{connectionId}:
+    patch:
+      operationId: renameOrgConnection
+      summary: Rename an organization connection
+      description: >-
+        Sets the display label of an organization connection. Requires admin
+        role. Available on OneCLI Cloud and self-hosted Enterprise.
+      tags:
+        - Organization Connections
+      parameters:
+        - $ref: '#/components/parameters/connectionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - label
+              properties:
+                label:
+                  type: string
+                  minLength: 1
+      responses:
+        '200':
+          description: Connection renamed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  provider:
+                    type: string
+                  status:
+                    type: string
+                  label:
+                    type: string
+                    nullable: true
+        '400':
+          description: Label is required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteOrgConnection
+      summary: Disconnect an organization connection
+      description: >-
+        Requires admin role. Available on OneCLI Cloud and self-hosted
+        Enterprise.
+      tags:
+        - Organization Connections
+      parameters:
+        - $ref: '#/components/parameters/connectionId'
+      responses:
+        '204':
+          description: Connection deleted
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Connection not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /org/apps/{provider}/authorize:
+    get:
+      operationId: authorizeOrgApp
+      summary: Start organization OAuth flow
+      description: >
+        Starts an OAuth flow that creates the connection at the organization
+        level, shared by every project in the organization. Redirects to the
+        app's OAuth authorization page; the flow completes on the shared
+        `/apps/{provider}/callback` endpoint, so no extra redirect URI
+        registration is needed.
+
+
+        Typically opened in a browser. With an organization API key the target
+        organization is derived from the key. Available on OneCLI Cloud and
+        self-hosted Enterprise. Requires the admin or owner role.
+      tags:
+        - Organization App Config
+      parameters:
+        - $ref: '#/components/parameters/provider'
+        - name: connectionId
+          in: query
+          schema:
+            type: string
+          description: >-
+            Reconnect an existing organization connection instead of creating a
+            new one
+        - name: org
+          in: query
+          schema:
+            type: string
+          description: >-
+            Target organization ID when the caller belongs to several
+            organizations. Defaults to the organization derived from the
+            credentials.
+      responses:
+        '302':
+          description: Redirect to OAuth provider
+        '400':
+          description: Provider not available or not configured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Insufficient role or not a member of the target organization
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /org/apps/{provider}/connect:
+    post:
+      operationId: connectOrgApp
+      summary: Connect app at the organization level
+      description: >-
+        Connects an app using direct credentials (API key, service account,
+        etc.) at the organization level. The connection is shared by every
+        project in the organization. Available on OneCLI Cloud and self-hosted
+        Enterprise. Requires admin role.
+      tags:
+        - Organization App Config
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fields
+              properties:
+                fields:
+                  type: object
+                  additionalProperties:
+                    type: string
+                  description: Credential fields required by the app
+                  example:
+                    apiKey: sk-...
+                connectionId:
+                  type: string
+                  description: Reconnect an existing connection
+                label:
+                  type: string
+                  description: >-
+                    Display label for the connection. Defaults to a label
+                    derived from the credential metadata.
+                method:
+                  type: string
+                  description: >-
+                    Connection method to use for apps with multiple methods
+                    (e.g. OAuth primary + API-key alternate). An unrecognized
+                    value is rejected.
+      responses:
+        '200':
+          description: Connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Validation error or provider not available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Insufficient role or not a member of the organization
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /org/apps/configured:
+    get:
+      operationId: listOrgConfiguredProviders
+      summary: List configured providers
+      description: >-
+        Returns provider IDs with an enabled app configuration at the
+        organization level. Available on OneCLI Cloud and self-hosted
+        Enterprise. Requires the admin or owner role.
+      tags:
+        - Organization App Config
+      responses:
+        '200':
+          description: List of configured provider IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /org/apps/{provider}/config:
+    get:
+      operationId: getOrgAppConfig
+      summary: Get organization app configuration
+      description: >-
+        Returns the non-secret configuration for a BYOC app at the organization
+        level. Available on OneCLI Cloud and self-hosted Enterprise. Requires
+        the admin or owner role.
+      tags:
+        - Organization App Config
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      responses:
+        '200':
+          description: App configuration
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  settings:
+                    type: object
+                    additionalProperties:
+                      type: string
+                  hasCredentials:
+                    type: boolean
+                  enabled:
+                    type: boolean
+    post:
+      operationId: upsertOrgAppConfig
+      summary: Set organization app configuration
+      description: >
+        Creates or updates the BYOC configuration for an app at the organization
+        level. The accepted field names are defined per app (e.g.
+        `clientId`/`clientSecret` for OAuth apps); unknown keys are stripped.
+        Requires admin role. Available on OneCLI Cloud and self-hosted
+        Enterprise.
+      tags:
+        - Organization App Config
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: string
+              description: Credential fields as defined by the app's configuration schema.
+              example:
+                clientId: 1234567890.apps.googleusercontent.com
+                clientSecret: GOCSPX-…
+      responses:
+        '201':
+          description: Configuration saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Provider does not support configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteOrgAppConfig
+      summary: Delete organization app configuration
+      description: >-
+        Requires admin role. Available on OneCLI Cloud and self-hosted
+        Enterprise.
+      tags:
+        - Organization App Config
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      responses:
+        '204':
+          description: Configuration deleted
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Configuration not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /org/apps/{provider}/config/toggle:
+    patch:
+      operationId: toggleOrgAppConfig
+      summary: Toggle organization app configuration
+      description: >-
+        Enables or disables an organization app configuration. Requires admin
+        role. Available on OneCLI Cloud and self-hosted Enterprise.
+      tags:
+        - Organization App Config
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - enabled
+              properties:
+                enabled:
+                  type: boolean
+      responses:
+        '200':
+          description: Configuration toggled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Configuration not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /org/apps/{provider}/blocklist:
+    get:
+      operationId: getOrgBlocklist
+      summary: Get organization blocklist state
+      description: >-
+        Returns the blocklist state for a provider at the organization level.
+        Requires admin role. Available on OneCLI Cloud and self-hosted
+        Enterprise.
+      tags:
+        - Organization App Config
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      responses:
+        '200':
+          description: Blocklist state
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BlocklistHostState'
+        '404':
+          description: Unknown provider
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: addOrgBlocklistEntry
+      summary: Activate or add an organization blocklist entry
+      description: >
+        Provide either `{ hostId }` to activate a predefined blocklist host, or
+        `{ name, hostPattern }` to add a custom rule — at the organization
+        level. Requires admin role. Available on OneCLI Cloud and self-hosted
+        Enterprise.
+      tags:
+        - Organization App Config
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  title: Activate predefined host
+                  required:
+                    - hostId
+                  properties:
+                    hostId:
+                      type: string
+                - type: object
+                  title: Add custom rule
+                  required:
+                    - name
+                    - hostPattern
+                  properties:
+                    name:
+                      type: string
+                    hostPattern:
+                      type: string
+      responses:
+        '201':
+          description: Blocklist entry created or activated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlocklistHostState'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /org/apps/{provider}/blocklist/{ruleId}:
+    patch:
+      operationId: toggleOrgBlocklistRule
+      summary: Toggle an organization blocklist rule
+      description: >-
+        Requires admin role. Available on OneCLI Cloud and self-hosted
+        Enterprise.
+      tags:
+        - Organization App Config
+      parameters:
+        - $ref: '#/components/parameters/provider'
+        - $ref: '#/components/parameters/blocklistRuleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - enabled
+              properties:
+                enabled:
+                  type: boolean
+      responses:
+        '200':
+          description: Rule toggled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+    delete:
+      operationId: removeOrgBlocklistRule
+      summary: Remove an organization blocklist rule
+      description: >-
+        Requires admin role. Available on OneCLI Cloud and self-hosted
+        Enterprise.
+      tags:
+        - Organization App Config
+      parameters:
+        - $ref: '#/components/parameters/provider'
+        - $ref: '#/components/parameters/blocklistRuleId'
+      responses:
+        '204':
+          description: Rule removed
+  /org/rules/permissions/{provider}:
+    get:
+      operationId: getAppPermissions
+      summary: Get app permissions
+      description: >
+        Returns the layered tool-level permission states for a provider at the
+        organization level. The shape matches the project endpoint (`{ defaults,
+        byAgent }`), but organization rules are agent-less, so `byAgent` is
+        always empty. Readable by all members. Available on OneCLI Cloud and
+        self-hosted Enterprise.
+      tags:
+        - Organization Rules
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      responses:
+        '200':
+          description: Layered permission states
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppPermissionStates'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      operationId: setAppPermissions
+      summary: Set app permissions
+      description: >
+        Updates tool-level permissions for a provider at the organization level.
+        Organization permissions are agent-less: `agentId` and the `inherit`
+        permission are not accepted here (they are project-scope concepts).
+        Requires admin role. Available on OneCLI Cloud and self-hosted
+        Enterprise.
+      tags:
+        - Organization Rules
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - changes
+              properties:
+                changes:
+                  type: array
+                  minItems: 1
+                  items:
+                    $ref: '#/components/schemas/PermissionChange'
+                conditions:
+                  type: array
+                  maxItems: 10
+                  items:
+                    $ref: '#/components/schemas/RuleCondition'
+      responses:
+        '200':
+          description: Permissions updated
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Validation error or unknown provider
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Insufficient permissions (requires admin role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /org/rules/overlap/{provider}:
+    get:
+      operationId: getOrgRuleOverlap
+      summary: Count overlapping custom rules (organization)
+      description: >-
+        Counts custom organization rules whose host patterns overlap the app's
+        hosts. Requires admin role. Available on OneCLI Cloud and self-hosted
+        Enterprise.
+      tags:
+        - Organization Rules
+      parameters:
+        - $ref: '#/components/parameters/provider'
+      responses:
+        '200':
+          description: Overlap count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+  /org/settings:
+    get:
+      operationId: getOrgSettings
+      summary: Get organization settings
+      description: >-
+        Returns the organization's settings. Requires admin role. Available on
+        OneCLI Cloud and self-hosted Enterprise.
+      tags:
+        - Organization Settings
+      responses:
+        '200':
+          description: Organization settings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  policyMode:
+                    type: string
+                    enum:
+                      - allow
+                      - deny
+                    description: >-
+                      `allow` — default-allow: requests pass unless a rule
+                      blocks them. `deny` — lockdown default-deny: requests are
+                      blocked unless a rule allows them.
+    patch:
+      operationId: updateOrgSettings
+      summary: Update organization settings
+      description: >-
+        Updates the organization's policy mode. Requires admin role. Available
+        on OneCLI Cloud and self-hosted Enterprise.
+      tags:
+        - Organization Settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - policyMode
+              properties:
+                policyMode:
+                  type: string
+                  enum:
+                    - allow
+                    - deny
+      responses:
+        '200':
+          description: Settings updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  policyMode:
+                    type: string
+                    enum:
+                      - allow
+                      - deny
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partner/orgs:
+    get:
+      operationId: listPartnerOrgs
+      summary: List partner organizations
+      description: >-
+        Returns all organizations created by your partner account, including
+        each one's claim status. Requires a Partner API key (`oc_partner_…`).
+      tags:
+        - Partner Organizations
+      responses:
+        '200':
+          description: List of organizations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PartnerOrg'
+    post:
+      operationId: createPartnerOrg
+      summary: Create an organization
+      description: >
+        Creates an organization for a customer, with a default project, an
+        organization-scoped API key, a project-scoped API key, a default agent
+        token, and a claim link.
+
+
+        These tokens are returned **once** in this response and are never shown
+        again — store them when you create the organization.
+      tags:
+        - Partner Organizations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                  example: Acme Corp
+      responses:
+        '201':
+          description: Organization created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatePartnerOrgResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partner/orgs/{orgId}:
+    get:
+      operationId: getPartnerOrg
+      summary: Get an organization
+      description: >-
+        Returns a single organization you manage, including its claim status and
+        projects.
+      tags:
+        - Partner Organizations
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+      responses:
+        '200':
+          description: Organization
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerOrg'
+        '404':
+          description: Organization not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deletePartnerOrg
+      summary: Delete an unclaimed organization
+      description: >-
+        Permanently deletes an organization and all of its content. Only allowed
+        while the organization is unclaimed.
+      tags:
+        - Partner Organizations
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+      responses:
+        '204':
+          description: Organization deleted
+        '403':
+          description: Organization has already been claimed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Organization not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partner/orgs/{orgId}/claim-link:
+    post:
+      operationId: reissuePartnerClaimLink
+      summary: Reissue a claim link
+      description: >-
+        Generates a new claim link for an unclaimed organization, invalidating
+        the previous one. Only allowed while the organization is unclaimed.
+      tags:
+        - Partner Organizations
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+      responses:
+        '200':
+          description: New claim link
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimLinkResponse'
+        '403':
+          description: Organization has already been claimed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Organization not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partner/orgs/{orgId}/rotate-tokens:
+    post:
+      operationId: rotatePartnerOrgTokens
+      summary: Rotate organization tokens
+      description: >-
+        Mints a new organization-scoped API key and default project API key for
+        an unclaimed organization. The previous keys stop working immediately.
+      tags:
+        - Partner Organizations
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+      responses:
+        '200':
+          description: New tokens
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RotateTokensResponse'
+        '403':
+          description: Organization has already been claimed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Organization not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partner/orgs/{orgId}/projects:
+    get:
+      operationId: listPartnerProjects
+      summary: List projects
+      description: Returns the projects in an organization you manage.
+      tags:
+        - Partner Projects
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+      responses:
+        '200':
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+        '404':
+          description: Organization not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: createPartnerProject
+      summary: Create a project
+      description: Adds a project to an unclaimed organization.
+      tags:
+        - Partner Projects
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 50
+                  example: Staging
+      responses:
+        '201':
+          description: Project created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partner/orgs/{orgId}/projects/{projectId}:
+    delete:
+      operationId: deletePartnerProject
+      summary: Delete a project
+      description: >-
+        Removes a project from an unclaimed organization. An organization must
+        keep at least one project.
+      tags:
+        - Partner Projects
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '204':
+          description: Project deleted
+        '400':
+          description: Cannot delete the only project in the organization
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Organization or project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partner/secrets:
+    get:
+      operationId: listPartnerSecrets
+      summary: List partner secrets
+      description: >-
+        Returns the partner-level secrets inherited by every organization you
+        manage. Secret values are never returned.
+      tags:
+        - Partner Secrets
+      responses:
+        '200':
+          description: List of secrets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Secret'
+    post:
+      operationId: createPartnerSecret
+      summary: Create a partner secret
+      description: >
+        Creates a partner-level secret inherited by every organization you
+        manage. Partner secrets are the lowest-priority tier — project and
+        organization secrets override them when host patterns overlap.
+      tags:
+        - Partner Secrets
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - type
+                - value
+                - hostPattern
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                  example: Fallback Anthropic key
+                type:
+                  type: string
+                  enum:
+                    - anthropic
+                    - openai
+                    - generic
+                value:
+                  type: string
+                  minLength: 1
+                  maxLength: 10000
+                  description: The secret value (API key, token, etc.)
+                hostPattern:
+                  type: string
+                  description: Hostname pattern to match (no `://`, `/`, or spaces)
+                  example: api.anthropic.com
+                pathPattern:
+                  type: string
+                  maxLength: 1000
+                  description: Optional path pattern to match
+                injectionConfig:
+                  $ref: '#/components/schemas/InjectionConfig'
+      responses:
+        '201':
+          description: Secret created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecretCreated'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partner/secrets/{secretId}:
+    patch:
+      operationId: updatePartnerSecret
+      summary: Update a partner secret
+      description: >-
+        Updates one or more fields on a partner secret. At least one field must
+        be provided.
+      tags:
+        - Partner Secrets
+      parameters:
+        - $ref: '#/components/parameters/secretId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                value:
+                  type: string
+                  minLength: 1
+                  maxLength: 10000
+                hostPattern:
+                  type: string
+                pathPattern:
+                  type: string
+                  nullable: true
+                injectionConfig:
+                  $ref: '#/components/schemas/InjectionConfig'
+      responses:
+        '200':
+          description: Secret updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Validation error or no fields provided
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Secret not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deletePartnerSecret
+      summary: Delete a partner secret
+      tags:
+        - Partner Secrets
+      parameters:
+        - $ref: '#/components/parameters/secretId'
+      responses:
+        '204':
+          description: Secret deleted
+        '404':
+          description: Secret not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partner/orgs/{orgId}/budgets:
+    get:
+      operationId: listPartnerOrgBudgets
+      summary: List spend budgets for an organization
+      description: >-
+        Returns the spend budgets set on your LLM keys for one organization,
+        each with its current-period spend. Requires a Partner API key
+        (`oc_partner_…`).
+      tags:
+        - Partner Budgets
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+      responses:
+        '200':
+          description: List of budgets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Budget'
+        '404':
+          description: Organization not found for this partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partner/orgs/{orgId}/secrets/{secretId}/budget:
+    post:
+      operationId: setPartnerOrgBudget
+      summary: Set or update a spend budget
+      description: >
+        Caps how much an organization can spend on one of your LLM keys. When
+        the organization's spend reaches the limit, the gateway stops using that
+        key for the organization until the budget is raised or reset. Creates
+        the budget, or replaces the existing one.
+
+
+        Only partner owners and admins can set budgets, and budgets are
+        supported on metered LLM keys (Anthropic today).
+      tags:
+        - Partner Budgets
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - $ref: '#/components/parameters/secretId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - limitCents
+                - period
+              properties:
+                limitCents:
+                  type: integer
+                  minimum: 1
+                  maximum: 100000000
+                  description: Spend ceiling in US cents (e.g. `500` = $5.00).
+                  example: 500
+                period:
+                  type: string
+                  enum:
+                    - monthly
+                    - total
+                  description: >-
+                    `monthly` resets on the 1st of each month (UTC); `total` is
+                    a one-time lifetime cap.
+      responses:
+        '200':
+          description: Budget saved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Budget'
+        '400':
+          description: Validation error, or the secret type isn't supported for budgets
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Caller is not a partner owner or admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Organization or secret not found for this partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: clearPartnerOrgBudget
+      summary: Remove a spend budget
+      description: >-
+        Removes the spend budget for an organization on one of your LLM keys.
+        The key resumes with no cap for that organization. Only partner owners
+        and admins can do this.
+      tags:
+        - Partner Budgets
+      parameters:
+        - $ref: '#/components/parameters/orgId'
+        - $ref: '#/components/parameters/secretId'
+      responses:
+        '204':
+          description: Budget removed
+        '403':
+          description: Caller is not a partner owner or admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Organization or secret not found for this partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partner/members:
+    get:
+      operationId: listPartnerMembers
+      summary: List partner members
+      description: >-
+        Returns the people who can sign in to your partner portal. Requires a
+        Partner API key (`oc_partner_…`) or a partner portal session.
+      tags:
+        - Partner Members
+      responses:
+        '200':
+          description: List of members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PartnerMember'
+    post:
+      operationId: addPartnerMember
+      summary: Add a partner member
+      description: >
+        Adds a member to your partner by email; they sign in to the portal with
+        that email. Only owners and admins can add members. The assignable roles
+        are `admin` and `member` — the owner role is set at partner creation and
+        can't be granted.
+      tags:
+        - Partner Members
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - role
+              properties:
+                email:
+                  type: string
+                  format: email
+                  maxLength: 255
+                  example: teammate@acme.com
+                role:
+                  type: string
+                  enum:
+                    - admin
+                    - member
+      responses:
+        '201':
+          description: Member added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerMember'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Caller is not a partner owner or admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: A member with this email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partner/members/{userId}/role:
+    patch:
+      operationId: changePartnerMemberRole
+      summary: Change a member's role
+      description: >-
+        Moves a member between `admin` and `member`. Only owners and admins can
+        do this, and the owner's role can't be changed.
+      tags:
+        - Partner Members
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - role
+              properties:
+                role:
+                  type: string
+                  enum:
+                    - admin
+                    - member
+      responses:
+        '200':
+          description: Role updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Caller is not a partner owner or admin, or the target is the owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Member not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partner/members/{userId}:
+    delete:
+      operationId: removePartnerMember
+      summary: Remove a partner member
+      description: >-
+        Removes a member from your partner. Only owners and admins can do this,
+        and the owner can't be removed.
+      tags:
+        - Partner Members
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      responses:
+        '204':
+          description: Member removed
+        '403':
+          description: Caller is not a partner owner or admin, or the target is the owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Member not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /org/partner/inherited-secrets:
+    get:
+      operationId: listInheritedPartnerSecrets
+      summary: List inherited partner secrets
+      description: >-
+        Returns the partner-level secrets this organization inherits
+        (read-only). Empty if the organization has no partner or has detached.
+        Authenticate with your organization API key or session.
+      tags:
+        - Organization Partner
+      responses:
+        '200':
+          description: List of inherited secrets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Secret'
+  /org/partner/status:
+    get:
+      operationId: getPartnerStatus
+      summary: Get partner status
+      description: >-
+        Returns whether this organization is managed by a partner and whether it
+        has detached. Requires the admin or owner role.
+      tags:
+        - Organization Partner
+      responses:
+        '200':
+          description: Partner link status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerLinkStatus'
+  /org/partner/detach:
+    post:
+      operationId: detachFromPartner
+      summary: Detach from partner
+      description: >-
+        Stops this organization from inheriting partner secrets while keeping
+        its partner attribution. Requires the admin or owner role.
+      tags:
+        - Organization Partner
+      responses:
+        '200':
+          description: Detached
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Organization is not managed by a partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Insufficient permissions (requires admin role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'

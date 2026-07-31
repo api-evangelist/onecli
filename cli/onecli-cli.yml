@@ -1,0 +1,55 @@
+generated: '2026-07-20'
+method: searched
+source: https://github.com/onecli/onecli-cli
+binary: onecli
+language: go
+license: Apache-2.0
+repo: https://github.com/onecli/onecli-cli
+current_version: v2.5.0
+install:
+- method: script
+  command: curl -fsSL onecli.sh/cli/install | sh
+- method: go
+  command: go install github.com/onecli/onecli-cli/cmd/onecli@latest
+- method: release
+  command: Download from https://github.com/onecli/onecli-cli/releases
+auth:
+  command: onecli auth login --api-key oc_...
+signature_flow:
+  description: >-
+    `onecli run -- <agent>` wraps an agent process with proxy settings, CA
+    certificates, and agent skills automatically so its HTTP calls route through
+    the OneCLI gateway (the agent never sees raw keys).
+  examples:
+  - onecli run -- claude
+  - onecli run -- cursor
+  - onecli run -- codex
+command_groups:
+- group: auth
+  commands:
+  - onecli auth login --api-key oc_...
+- group: run
+  commands:
+  - onecli run -- <agent>
+- group: agents
+  commands:
+  - onecli agents list
+  - onecli agents get-default
+  - onecli agents create --name X --identifier Y
+  - onecli agents delete --id X
+  - onecli agents rename --id X --name Y
+  - onecli agents regenerate-token --id X
+  - onecli agents secrets --id X
+  - onecli agents set-secrets --id X --secret-ids a,b
+  - onecli agents set-secret-mode --id X --mode selective
+- group: secrets
+  commands:
+  - onecli secrets list
+  - onecli secrets create --name X --type anthropic ...
+  - onecli secrets update --id X --value Y
+  - onecli secrets delete --id X
+- group: rules
+  note: >-
+    The CLI also manages policy rules and configuration (per the repo README
+    "manage agents, secrets, rules, and configuration from the terminal");
+    exact rule subcommand syntax not captured verbatim.

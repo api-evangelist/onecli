@@ -1,0 +1,29 @@
+generated: '2026-07-20'
+method: searched
+source: openapi/onecli-openapi-original.yml
+docs: https://onecli.sh/docs/api-reference
+summary:
+  types:
+  - http
+  http_schemes:
+  - bearer
+  api_key_prefixes:
+  - oc_          # project-scoped key
+  - oc_org_      # organization-scoped key (requires X-Project-Id for project endpoints)
+  - oc_partner_  # partner-scoped key (reseller / agency provisioning)
+schemes:
+- name: bearerAuth
+  type: http
+  scheme: bearer
+  description: >-
+    API key obtained from the OneCLI dashboard or `GET /v1/user/api-key`, sent as
+    `Authorization: Bearer <key>`. Cookie-based dashboard sessions are also accepted.
+  sources:
+  - openapi/onecli-openapi-original.yml
+notes:
+- "All endpoints require authentication."
+- "Project keys (oc_) operate on a single project."
+- "Organization keys (oc_org_) can operate across projects; project-scoped endpoints require an X-Project-Id: proj_... header (a 401 is returned without it)."
+- "Organization endpoints (/org/...) need no project header and require the admin or owner role, except GET /org/rules/permissions/{provider} which any member may read."
+- "Partner keys (oc_partner_) provision and manage organizations on behalf of customers."
+- "OAuth is used by the gateway to connect downstream apps (Google, GitHub, Slack, ...), not to authenticate to the OneCLI management API itself."

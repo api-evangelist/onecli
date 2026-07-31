@@ -1,0 +1,83 @@
+generated: '2026-07-20'
+method: searched
+source: https://onecli.sh/docs/api-reference/errors
+format: custom-envelope
+envelope:
+  description: >-
+    Two shapes. Route-level validation errors return a flat string:
+    {"error": "Label is required"}. Authentication and service errors return an
+    envelope: {"error": {"message": "...", "type": "authentication_error"}}.
+    Clients should read `error` when it is a string, otherwise `error.message`.
+  fields:
+  - error        # string OR object
+  - error.message
+  - error.type
+status_codes:
+- status: 400
+  meaning: Bad Request
+  retryable: false
+  causes: Missing required field, invalid field value, body fails validation.
+- status: 401
+  meaning: Unauthorized
+  retryable: false
+  causes: Missing/invalid API key or token; org key used on a project endpoint without X-Project-Id.
+- status: 403
+  meaning: Forbidden
+  retryable: false
+  causes: Insufficient permissions for a role-gated (admin/owner) endpoint.
+- status: 404
+  meaning: Not Found
+  retryable: false
+  causes: Resource ID does not exist, or wrong provider name.
+- status: 409
+  meaning: Conflict
+  retryable: false
+  causes: Duplicate identifier (e.g. an agent identifier already exists).
+- status: 410
+  meaning: Gone
+  retryable: false
+  causes: Expired/consumed one-time resource (e.g. claim link, unclaimed provision).
+- status: 500
+  meaning: Internal Server Error
+  retryable: true
+  causes: Unexpected server failure. Retry with exponential backoff.
+- status: 503
+  meaning: Service Unavailable
+  retryable: true
+common_messages:
+- message: "Invalid API key or token."
+  status: 401
+  cause: Missing/invalid key, or an org key (oc_org_) used on a project endpoint without X-Project-Id.
+- message: "X-Project-Id header is required"
+  status: 400
+  cause: Endpoint needs a project context the request did not carry.
+- message: "Insufficient permissions"
+  status: 403
+  cause: Endpoint requires the admin or owner role.
+- message: "An agent with this identifier already exists"
+  status: 409
+  cause: Duplicate agent identifier within the project (envelope shape).
+- message: "Cannot delete the default agent"
+  status: 400
+  cause: Attempting to delete the project's default agent.
+- message: "One or more secrets not found"
+  status: 400
+  cause: Secret IDs in the request do not exist in the project.
+- message: "Enter a hostname, not a URL (remove http:// or https://)"
+  status: 400
+  cause: hostPattern includes a protocol prefix.
+- message: "Header name, parameter name, or URL path template is required for generic secrets"
+  status: 400
+  cause: type is `generic` but injectionConfig has no injection method.
+- message: "rateLimit and rateLimitWindow are required when action is rate_limit"
+  status: 400
+  cause: Action set to rate_limit without the required rate fields.
+- message: "Unknown tool: {toolId}"
+  status: 400
+  cause: Permission change references a tool ID not in the app's permission definition.
+- message: "Unknown provider: {provider}"
+  status: 404
+  cause: Provider name not in the app registry.
+retry_guidance: >-
+  4xx errors are not retryable and must be fixed before retrying. 500/503 are
+  retryable with exponential backoff.

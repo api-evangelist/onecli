@@ -1,0 +1,44 @@
+generated: '2026-07-20'
+method: searched
+source: https://github.com/onecli/onecli/releases
+scheme: semver
+note: >-
+  OneCLI publishes dated release history via GitHub Releases (no single /changelog
+  page). Three release trains: the core gateway (onecli/onecli), the CLI
+  (onecli/onecli-cli), and the Node SDK (@onecli-sh/sdk).
+trains:
+- name: core-gateway
+  repo: https://github.com/onecli/onecli/releases
+  current: v1.41.0
+  entries:
+  - version: v1.41.0
+    date: '2026-07-07'
+  - version: v1.40.0
+    date: '2026-07-02'
+  - version: v1.39.0
+    date: '2026-06-28'
+  - version: v1.38.0
+    date: '2026-06-20'
+  - version: v1.37.0
+    date: '2026-06-16'
+  - version: v1.36.0
+    date: '2026-06-10'
+- name: cli
+  repo: https://github.com/onecli/onecli-cli/releases
+  current: v2.5.0
+  entries:
+  - version: v2.5.0
+    date: '2026-07-05'
+  - version: v2.4.0
+    date: '2026-07-04'
+  - version: v2.3.1
+    date: '2026-07-04'
+  - version: v2.3.0
+    date: '2026-07-03'
+  - version: v2.2.7
+    date: '2026-06-23'
+  - version: v2.2.6
+    date: '2026-06-15'
+- name: node-sdk
+  repo: https://www.npmjs.com/package/@onecli-sh/sdk
+  current: 2.7.0

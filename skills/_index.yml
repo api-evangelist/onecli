@@ -1,0 +1,21 @@
+generated: '2026-07-20'
+method: generated
+source: openapi/onecli-openapi-original.yml
+note: >-
+  Skills generated from the OneCLI OpenAPI; every step is grounded in a verified
+  operationId. OneCLI also serves a provider-published "gateway skill" at runtime via
+  GET /skill/gateway (getGatewaySkill) that teaches a coding agent how to work behind
+  the gateway — that one requires an authenticated call with an agent_framework param.
+skills:
+- file: onecli-provision-agent.md
+  name: Provision a OneCLI agent with scoped credentials
+  api: openapi/onecli-openapi-original.yml
+  operations: [createAgent, createSecret, updateAgentSecrets, updateAgentSecretMode, regenerateAgentToken]
+- file: onecli-connect-app-and-govern.md
+  name: Connect an app and enforce a policy rule
+  api: openapi/onecli-openapi-original.yml
+  operations: [listApps, connectApp, listConnections, createRule]
+- file: onecli-handle-approvals.md
+  name: Handle manual-approval requests
+  api: openapi/onecli-openapi-original.yml
+  operations: [listPendingApprovals, submitApprovalDecision]

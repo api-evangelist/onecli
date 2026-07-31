@@ -1,0 +1,361 @@
+generated: '2026-07-20'
+method: derived
+status: candidate
+source: openapi/onecli-openapi-original.yml
+note: No official hosted MCP server was found for the OneCLI management API. This is a candidate tool
+  list derived one-per-operationId from the OpenAPI, not a published server. OneCLI itself is a credential
+  gateway that proxies MCP tool calls for downstream apps; that is distinct from an MCP server exposing
+  this management API.
+server:
+  name: onecli
+  transport: http
+  url: null
+tools:
+- name: listAgents
+  description: List agents
+  source_operation: openapi/onecli-openapi-original.yml#listAgents
+- name: createAgent
+  description: Create an agent
+  source_operation: openapi/onecli-openapi-original.yml#createAgent
+- name: getDefaultAgent
+  description: Get default agent
+  source_operation: openapi/onecli-openapi-original.yml#getDefaultAgent
+- name: renameAgent
+  description: Rename an agent
+  source_operation: openapi/onecli-openapi-original.yml#renameAgent
+- name: deleteAgent
+  description: Delete an agent
+  source_operation: openapi/onecli-openapi-original.yml#deleteAgent
+- name: setDefaultAgent
+  description: Set default agent
+  source_operation: openapi/onecli-openapi-original.yml#setDefaultAgent
+- name: regenerateAgentToken
+  description: Regenerate agent token
+  source_operation: openapi/onecli-openapi-original.yml#regenerateAgentToken
+- name: updateAgentSecretMode
+  description: Update agent secret mode
+  source_operation: openapi/onecli-openapi-original.yml#updateAgentSecretMode
+- name: getAgentSecrets
+  description: List agent's assigned secrets
+  source_operation: openapi/onecli-openapi-original.yml#getAgentSecrets
+- name: updateAgentSecrets
+  description: Update agent's assigned secrets
+  source_operation: openapi/onecli-openapi-original.yml#updateAgentSecrets
+- name: listAgentGranularAccess
+  description: List granular-access policies
+  source_operation: openapi/onecli-openapi-original.yml#listAgentGranularAccess
+- name: getAgentConnections
+  description: List agent's app-connection assignments
+  source_operation: openapi/onecli-openapi-original.yml#getAgentConnections
+- name: updateAgentConnections
+  description: Update agent's app-connection assignments
+  source_operation: openapi/onecli-openapi-original.yml#updateAgentConnections
+- name: listSecrets
+  description: List secrets
+  source_operation: openapi/onecli-openapi-original.yml#listSecrets
+- name: createSecret
+  description: Create a secret
+  source_operation: openapi/onecli-openapi-original.yml#createSecret
+- name: updateSecret
+  description: Update a secret
+  source_operation: openapi/onecli-openapi-original.yml#updateSecret
+- name: deleteSecret
+  description: Delete a secret
+  source_operation: openapi/onecli-openapi-original.yml#deleteSecret
+- name: listRules
+  description: List policy rules
+  source_operation: openapi/onecli-openapi-original.yml#listRules
+- name: createRule
+  description: Create a policy rule
+  source_operation: openapi/onecli-openapi-original.yml#createRule
+- name: getRule
+  description: Get a policy rule
+  source_operation: openapi/onecli-openapi-original.yml#getRule
+- name: updateRule
+  description: Update a policy rule
+  source_operation: openapi/onecli-openapi-original.yml#updateRule
+- name: deleteRule
+  description: Delete a policy rule
+  source_operation: openapi/onecli-openapi-original.yml#deleteRule
+- name: getRulePermissions
+  description: Get app permissions (project)
+  source_operation: openapi/onecli-openapi-original.yml#getRulePermissions
+- name: setRulePermissions
+  description: Set app permissions (project)
+  source_operation: openapi/onecli-openapi-original.yml#setRulePermissions
+- name: getRuleOverlap
+  description: Count overlapping custom rules (project)
+  source_operation: openapi/onecli-openapi-original.yml#getRuleOverlap
+- name: listProjects
+  description: List projects
+  source_operation: openapi/onecli-openapi-original.yml#listProjects
+- name: createProject
+  description: Create a project
+  source_operation: openapi/onecli-openapi-original.yml#createProject
+- name: getProject
+  description: Get a project
+  source_operation: openapi/onecli-openapi-original.yml#getProject
+- name: updateProject
+  description: Update a project
+  source_operation: openapi/onecli-openapi-original.yml#updateProject
+- name: deleteProject
+  description: Delete a project
+  source_operation: openapi/onecli-openapi-original.yml#deleteProject
+- name: provisionUser
+  description: Provision a team member
+  source_operation: openapi/onecli-openapi-original.yml#provisionUser
+- name: getUser
+  description: Get current user
+  source_operation: openapi/onecli-openapi-original.yml#getUser
+- name: updateUser
+  description: Update user profile
+  source_operation: openapi/onecli-openapi-original.yml#updateUser
+- name: getApiKey
+  description: Get API key
+  source_operation: openapi/onecli-openapi-original.yml#getApiKey
+- name: regenerateApiKey
+  description: Regenerate API key
+  source_operation: openapi/onecli-openapi-original.yml#regenerateApiKey
+- name: listApps
+  description: List apps
+  source_operation: openapi/onecli-openapi-original.yml#listApps
+- name: getApp
+  description: Get app details
+  source_operation: openapi/onecli-openapi-original.yml#getApp
+- name: authorizeApp
+  description: Start OAuth flow
+  source_operation: openapi/onecli-openapi-original.yml#authorizeApp
+- name: connectApp
+  description: Connect app with credentials
+  source_operation: openapi/onecli-openapi-original.yml#connectApp
+- name: listConnections
+  description: List connections
+  source_operation: openapi/onecli-openapi-original.yml#listConnections
+- name: renameConnection
+  description: Rename a connection
+  source_operation: openapi/onecli-openapi-original.yml#renameConnection
+- name: disconnectConnection
+  description: Disconnect a connection
+  source_operation: openapi/onecli-openapi-original.yml#disconnectConnection
+- name: getAppConfig
+  description: Get app configuration
+  source_operation: openapi/onecli-openapi-original.yml#getAppConfig
+- name: upsertAppConfig
+  description: Set app configuration
+  source_operation: openapi/onecli-openapi-original.yml#upsertAppConfig
+- name: deleteAppConfig
+  description: Delete app configuration
+  source_operation: openapi/onecli-openapi-original.yml#deleteAppConfig
+- name: toggleAppConfig
+  description: Toggle app configuration
+  source_operation: openapi/onecli-openapi-original.yml#toggleAppConfig
+- name: listConfiguredApps
+  description: List configured providers
+  source_operation: openapi/onecli-openapi-original.yml#listConfiguredApps
+- name: listEnvDefaultApps
+  description: List providers with platform default credentials
+  source_operation: openapi/onecli-openapi-original.yml#listEnvDefaultApps
+- name: listPermissionDefinitions
+  description: List app permission definitions
+  source_operation: openapi/onecli-openapi-original.yml#listPermissionDefinitions
+- name: getPermissionDefinition
+  description: Get app permission definition
+  source_operation: openapi/onecli-openapi-original.yml#getPermissionDefinition
+- name: getBlocklist
+  description: Get blocklist state
+  source_operation: openapi/onecli-openapi-original.yml#getBlocklist
+- name: addBlocklistEntry
+  description: Activate or add a blocklist entry
+  source_operation: openapi/onecli-openapi-original.yml#addBlocklistEntry
+- name: toggleBlocklistRule
+  description: Toggle a blocklist rule
+  source_operation: openapi/onecli-openapi-original.yml#toggleBlocklistRule
+- name: removeBlocklistRule
+  description: Remove a blocklist rule
+  source_operation: openapi/onecli-openapi-original.yml#removeBlocklistRule
+- name: getHealth
+  description: Health check
+  source_operation: openapi/onecli-openapi-original.yml#getHealth
+- name: getCounts
+  description: Get resource counts
+  source_operation: openapi/onecli-openapi-original.yml#getCounts
+- name: listVaults
+  description: List vault connections
+  source_operation: openapi/onecli-openapi-original.yml#listVaults
+- name: getContainerConfig
+  description: Get container configuration
+  source_operation: openapi/onecli-openapi-original.yml#getContainerConfig
+- name: listCredentialStubs
+  description: List credential stub agents
+  source_operation: openapi/onecli-openapi-original.yml#listCredentialStubs
+- name: getCredentialStub
+  description: Get a credential stub
+  source_operation: openapi/onecli-openapi-original.yml#getCredentialStub
+- name: getGatewaySkill
+  description: Get the gateway skill
+  source_operation: openapi/onecli-openapi-original.yml#getGatewaySkill
+- name: migrateExport
+  description: Export data to OneCLI Cloud
+  source_operation: openapi/onecli-openapi-original.yml#migrateExport
+- name: listPendingApprovals
+  description: List pending approvals
+  source_operation: openapi/onecli-openapi-original.yml#listPendingApprovals
+- name: submitApprovalDecision
+  description: Submit an approval decision
+  source_operation: openapi/onecli-openapi-original.yml#submitApprovalDecision
+- name: listOrgPendingApprovals
+  description: List pending approvals across the organization
+  source_operation: openapi/onecli-openapi-original.yml#listOrgPendingApprovals
+- name: listOrgSecrets
+  description: List organization secrets
+  source_operation: openapi/onecli-openapi-original.yml#listOrgSecrets
+- name: createOrgSecret
+  description: Create an organization secret
+  source_operation: openapi/onecli-openapi-original.yml#createOrgSecret
+- name: updateOrgSecret
+  description: Update an organization secret
+  source_operation: openapi/onecli-openapi-original.yml#updateOrgSecret
+- name: deleteOrgSecret
+  description: Delete an organization secret
+  source_operation: openapi/onecli-openapi-original.yml#deleteOrgSecret
+- name: listOrgRules
+  description: List organization rules
+  source_operation: openapi/onecli-openapi-original.yml#listOrgRules
+- name: createOrgRule
+  description: Create an organization rule
+  source_operation: openapi/onecli-openapi-original.yml#createOrgRule
+- name: getOrgRule
+  description: Get an organization rule
+  source_operation: openapi/onecli-openapi-original.yml#getOrgRule
+- name: updateOrgRule
+  description: Update an organization rule
+  source_operation: openapi/onecli-openapi-original.yml#updateOrgRule
+- name: deleteOrgRule
+  description: Delete an organization rule
+  source_operation: openapi/onecli-openapi-original.yml#deleteOrgRule
+- name: listOrgConnections
+  description: List organization connections
+  source_operation: openapi/onecli-openapi-original.yml#listOrgConnections
+- name: renameOrgConnection
+  description: Rename an organization connection
+  source_operation: openapi/onecli-openapi-original.yml#renameOrgConnection
+- name: deleteOrgConnection
+  description: Disconnect an organization connection
+  source_operation: openapi/onecli-openapi-original.yml#deleteOrgConnection
+- name: authorizeOrgApp
+  description: Start organization OAuth flow
+  source_operation: openapi/onecli-openapi-original.yml#authorizeOrgApp
+- name: connectOrgApp
+  description: Connect app at the organization level
+  source_operation: openapi/onecli-openapi-original.yml#connectOrgApp
+- name: listOrgConfiguredProviders
+  description: List configured providers
+  source_operation: openapi/onecli-openapi-original.yml#listOrgConfiguredProviders
+- name: getOrgAppConfig
+  description: Get organization app configuration
+  source_operation: openapi/onecli-openapi-original.yml#getOrgAppConfig
+- name: upsertOrgAppConfig
+  description: Set organization app configuration
+  source_operation: openapi/onecli-openapi-original.yml#upsertOrgAppConfig
+- name: deleteOrgAppConfig
+  description: Delete organization app configuration
+  source_operation: openapi/onecli-openapi-original.yml#deleteOrgAppConfig
+- name: toggleOrgAppConfig
+  description: Toggle organization app configuration
+  source_operation: openapi/onecli-openapi-original.yml#toggleOrgAppConfig
+- name: getOrgBlocklist
+  description: Get organization blocklist state
+  source_operation: openapi/onecli-openapi-original.yml#getOrgBlocklist
+- name: addOrgBlocklistEntry
+  description: Activate or add an organization blocklist entry
+  source_operation: openapi/onecli-openapi-original.yml#addOrgBlocklistEntry
+- name: toggleOrgBlocklistRule
+  description: Toggle an organization blocklist rule
+  source_operation: openapi/onecli-openapi-original.yml#toggleOrgBlocklistRule
+- name: removeOrgBlocklistRule
+  description: Remove an organization blocklist rule
+  source_operation: openapi/onecli-openapi-original.yml#removeOrgBlocklistRule
+- name: getAppPermissions
+  description: Get app permissions
+  source_operation: openapi/onecli-openapi-original.yml#getAppPermissions
+- name: setAppPermissions
+  description: Set app permissions
+  source_operation: openapi/onecli-openapi-original.yml#setAppPermissions
+- name: getOrgRuleOverlap
+  description: Count overlapping custom rules (organization)
+  source_operation: openapi/onecli-openapi-original.yml#getOrgRuleOverlap
+- name: getOrgSettings
+  description: Get organization settings
+  source_operation: openapi/onecli-openapi-original.yml#getOrgSettings
+- name: updateOrgSettings
+  description: Update organization settings
+  source_operation: openapi/onecli-openapi-original.yml#updateOrgSettings
+- name: listPartnerOrgs
+  description: List partner organizations
+  source_operation: openapi/onecli-openapi-original.yml#listPartnerOrgs
+- name: createPartnerOrg
+  description: Create an organization
+  source_operation: openapi/onecli-openapi-original.yml#createPartnerOrg
+- name: getPartnerOrg
+  description: Get an organization
+  source_operation: openapi/onecli-openapi-original.yml#getPartnerOrg
+- name: deletePartnerOrg
+  description: Delete an unclaimed organization
+  source_operation: openapi/onecli-openapi-original.yml#deletePartnerOrg
+- name: reissuePartnerClaimLink
+  description: Reissue a claim link
+  source_operation: openapi/onecli-openapi-original.yml#reissuePartnerClaimLink
+- name: rotatePartnerOrgTokens
+  description: Rotate organization tokens
+  source_operation: openapi/onecli-openapi-original.yml#rotatePartnerOrgTokens
+- name: listPartnerProjects
+  description: List projects
+  source_operation: openapi/onecli-openapi-original.yml#listPartnerProjects
+- name: createPartnerProject
+  description: Create a project
+  source_operation: openapi/onecli-openapi-original.yml#createPartnerProject
+- name: deletePartnerProject
+  description: Delete a project
+  source_operation: openapi/onecli-openapi-original.yml#deletePartnerProject
+- name: listPartnerSecrets
+  description: List partner secrets
+  source_operation: openapi/onecli-openapi-original.yml#listPartnerSecrets
+- name: createPartnerSecret
+  description: Create a partner secret
+  source_operation: openapi/onecli-openapi-original.yml#createPartnerSecret
+- name: updatePartnerSecret
+  description: Update a partner secret
+  source_operation: openapi/onecli-openapi-original.yml#updatePartnerSecret
+- name: deletePartnerSecret
+  description: Delete a partner secret
+  source_operation: openapi/onecli-openapi-original.yml#deletePartnerSecret
+- name: listPartnerOrgBudgets
+  description: List spend budgets for an organization
+  source_operation: openapi/onecli-openapi-original.yml#listPartnerOrgBudgets
+- name: setPartnerOrgBudget
+  description: Set or update a spend budget
+  source_operation: openapi/onecli-openapi-original.yml#setPartnerOrgBudget
+- name: clearPartnerOrgBudget
+  description: Remove a spend budget
+  source_operation: openapi/onecli-openapi-original.yml#clearPartnerOrgBudget
+- name: listPartnerMembers
+  description: List partner members
+  source_operation: openapi/onecli-openapi-original.yml#listPartnerMembers
+- name: addPartnerMember
+  description: Add a partner member
+  source_operation: openapi/onecli-openapi-original.yml#addPartnerMember
+- name: changePartnerMemberRole
+  description: Change a member's role
+  source_operation: openapi/onecli-openapi-original.yml#changePartnerMemberRole
+- name: removePartnerMember
+  description: Remove a partner member
+  source_operation: openapi/onecli-openapi-original.yml#removePartnerMember
+- name: listInheritedPartnerSecrets
+  description: List inherited partner secrets
+  source_operation: openapi/onecli-openapi-original.yml#listInheritedPartnerSecrets
+- name: getPartnerStatus
+  description: Get partner status
+  source_operation: openapi/onecli-openapi-original.yml#getPartnerStatus
+- name: detachFromPartner
+  description: Detach from partner
+  source_operation: openapi/onecli-openapi-original.yml#detachFromPartner

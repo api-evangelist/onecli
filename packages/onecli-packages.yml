@@ -1,0 +1,32 @@
+generated: '2026-07-20'
+method: searched
+source: https://onecli.sh/docs/sdks
+packages:
+- language: javascript
+  registry: npm
+  name: "@onecli-sh/sdk"
+  url: https://www.npmjs.com/package/@onecli-sh/sdk
+  install: npm install @onecli-sh/sdk
+  version: 2.7.0
+  license: MIT
+  repo: https://github.com/onecli/node-sdk
+  official: true
+  description: >-
+    Official Node.js / TypeScript SDK. Configures agent containers to route through
+    the OneCLI proxy without using the CLI.
+- language: go
+  registry: pkg.go.dev
+  name: github.com/onecli/onecli-cli
+  url: https://github.com/onecli/onecli-cli
+  install: go install github.com/onecli/onecli-cli/cmd/onecli@latest
+  version: v2.5.0
+  license: Apache-2.0
+  repo: https://github.com/onecli/onecli-cli
+  official: true
+  description: >-
+    Official OneCLI command-line binary (Go). Also installable via
+    `curl -fsSL onecli.sh/cli/install | sh`. Command surface catalogued in cli/.
+notes:
+- Python, Rust, Go, Java/Kotlin, Ruby and .NET SDKs are listed as "coming soon" on
+  https://onecli.sh/docs/sdks and are not yet published (PyPI `onecli` returns 404).
+- "onecli-plugin (https://github.com/onecli/onecli-plugin) is a Claude Code plugin, not a package-registry artifact."

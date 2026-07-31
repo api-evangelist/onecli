@@ -1,7 +1,30 @@
 aid: onecli
 name: Onecli
-description: Onecli is a company surfaced as a portfolio company of y-combinator and added to the API
-  Evangelist network as a stub for enrichment. This profile is a lead awaiting the enrichment pipeline.
+description: >-
+  OneCLI is an open-source credential gateway and identity layer for AI agents.
+  Agents connect to Gmail, GitHub, Slack, AWS, Jira and 50+ other services
+  through a network-layer proxy that injects real API keys and OAuth tokens at
+  request time, so the agent only ever sees placeholder credential stubs and a
+  compromised or misbehaving agent can never leak secrets. Teams get per-agent
+  access control, policy rules (allow, block, rate-limit, manual approval), a
+  built-in encrypted secrets vault, and full audit logs. The REST API manages
+  agents, secrets, policy rules, and app connections programmatically; OneCLI
+  runs as hosted Cloud or as a self-hosted (Docker) community edition. Founded
+  by ex-Argon Security / Aqua Security engineers and backed by Y Combinator;
+  licensed Apache-2.0.
+accessModel:
+  pricing: unknown
+  onboarding: self-serve
+  trial: false
+  try_now: false
+  public: false
+  label: Self-serve signup
+  confidence: medium
+  source:
+  - authentication
+  generated: '2026-07-22'
+  method: derived
+image: https://onecli.sh/og.png
 url: https://raw.githubusercontent.com/api-evangelist/onecli/refs/heads/main/apis.yml
 x-type: company
 x-source: vc-portfolio
@@ -11,12 +34,433 @@ x-tier: stub
 x-tier-reason: portfolio-lead
 specificationVersion: '0.20'
 created: '2026-07-17'
-modified: '2026-07-17'
+modified: '2026-07-20'
 tags:
 - Company
-apis: []
+- Security
+- Identity
+- AI Agents
+- Secrets Management
+- Credentials
+- Gateway
+- OAuth
+- Developer Tools
+- MCP
+- Vault
+apis:
+- aid: onecli:onecli-agent-setup-api
+  name: Onecli Agent Setup API
+  description: >-
+    Endpoints agents and orchestrators use to bootstrap gateway access (container config, credential stubs,
+    gateway skill).
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Agent Setup
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-agent-setup-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-agents-api
+  name: Onecli Agents API
+  description: Manage agents and their access tokens, secrets, and configuration.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Agents
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-agents-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-approvals-api
+  name: Onecli Approvals API
+  description: Long-poll for pending manual-approval requests and submit approve/deny decisions.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Approvals
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-approvals-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-apps-api
+  name: Onecli Apps API
+  description: >-
+    Manage app connections (OAuth and direct credentials), BYOC configuration, permission catalogs, and
+    blocklists.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Apps
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-apps-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-connections-api
+  name: Onecli Connections API
+  description: App connections as a top-level resource.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Connections
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-connections-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-migration-api
+  name: Onecli Migration API
+  description: Migrate data from a self-hosted instance to OneCLI Cloud.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Migration
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-migration-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-organization-app-config-api
+  name: Onecli Organization App Config API
+  description: >-
+    Connect apps (OAuth and direct credentials) and manage BYOC app configuration at the organization
+    level. Available on OneCLI Cloud and self-hosted Enterprise.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Organization App Config
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-organization-app-config-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-organization-approvals-api
+  name: Onecli Organization Approvals API
+  description: >-
+    Long-poll for manual-approval requests across every project in the organization. Available on OneCLI
+    Cloud and self-hosted Enterprise.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Organization Approvals
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-organization-approvals-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-organization-connections-api
+  name: Onecli Organization Connections API
+  description: >-
+    Manage app connections at the organization level. Available on OneCLI Cloud and self-hosted Enterprise.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Organization Connections
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-organization-connections-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-organization-partner-api
+  name: Onecli Organization Partner API
+  description: Inspect and detach an organization's partner relationship. Cloud only.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Organization Partner
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-organization-partner-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-organization-rules-api
+  name: Onecli Organization Rules API
+  description: >-
+    Manage policy rules at the organization level. Organization rules apply across all projects. Available
+    on OneCLI Cloud and self-hosted Enterprise.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Organization Rules
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-organization-rules-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-organization-secrets-api
+  name: Onecli Organization Secrets API
+  description: >-
+    Manage secrets at the organization level. Organization secrets apply across all projects. Available
+    on OneCLI Cloud and self-hosted Enterprise.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Organization Secrets
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-organization-secrets-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-organization-settings-api
+  name: Onecli Organization Settings API
+  description: Organization-wide policy settings. Available on OneCLI Cloud and self-hosted Enterprise.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Organization Settings
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-organization-settings-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-partner-budgets-api
+  name: Onecli Partner Budgets API
+  description: >-
+    Cap how much an organization can spend on a partner LLM key. Owner or admin only. Cloud only.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Partner Budgets
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-partner-budgets-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-partner-members-api
+  name: Onecli Partner Members API
+  description: Manage who can sign in to your partner portal. Owner or admin only. Cloud only.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Partner Members
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-partner-members-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-partner-organizations-api
+  name: Onecli Partner Organizations API
+  description: >-
+    Create and manage customer organizations as a partner. Requires a Partner API key. Cloud only.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Partner Organizations
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-partner-organizations-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-partner-projects-api
+  name: Onecli Partner Projects API
+  description: Manage projects within an unclaimed partner organization. Cloud only.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Partner Projects
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-partner-projects-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-partner-secrets-api
+  name: Onecli Partner Secrets API
+  description: Manage partner-level secrets inherited by every organization you manage. Cloud only.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Partner Secrets
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-partner-secrets-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-projects-api
+  name: Onecli Projects API
+  description: >-
+    Manage projects within your organization. Requires admin role for create/update and owner role for
+    delete. Cloud only.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Projects
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-projects-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-rules-api
+  name: Onecli Rules API
+  description: Manage policy rules that control how agents interact with external services.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Rules
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-rules-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-secrets-api
+  name: Onecli Secrets API
+  description: Manage credentials that the gateway injects into outbound requests.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Secrets
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-secrets-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-team-api
+  name: Onecli Team API
+  description: Provision team members programmatically. Requires admin role. Cloud only.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Team
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-team-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-user-api
+  name: Onecli User API
+  description: Manage your user profile and API keys.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - User
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-user-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
+- aid: onecli:onecli-utility-api
+  name: Onecli Utility API
+  description: Health check and project resource summaries.
+  humanURL: https://onecli.sh/docs/api-reference
+  baseURL: https://api.onecli.sh/v1
+  tags:
+  - Utility
+  properties:
+  - type: OpenAPI
+    url: openapi/onecli-utility-api-openapi.yml
+  - type: APIReference
+    url: https://onecli.sh/docs/api-reference
+  - type: Documentation
+    url: https://onecli.sh/docs
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
+common:
+- type: DomainSecurity
+  url: security/onecli-domain-security.yml
+- type: AgenticAccess
+  url: agentic-access/onecli-agentic-access.yml
+- type: Authentication
+  url: authentication/onecli-authentication.yml
+- url: https://onecli.sh
+  type: DeveloperPortal
+- url: https://onecli.sh/docs
+  type: Documentation
+- url: https://onecli.sh/docs/api-reference
+  type: APIReference
+- url: https://onecli.sh/docs/quickstart
+  type: GettingStarted
+- url: https://onecli.sh/pricing
+  type: Pricing
+- url: https://app.onecli.sh
+  type: SignUp
+- url: https://onecli.sh/terms
+  type: TermsOfService
+- url: https://onecli.sh/privacy
+  type: PrivacyPolicy
+- url: https://onecli.sh/blog
+  type: Blog
+- url: https://github.com/onecli
+  type: GitHubOrganization
+- url: https://discord.gg/PSztzsQB3g
+  type: Support
+- type: Packages
+  url: packages/onecli-packages.yml
+- type: SDKs
+  url: packages/onecli-packages.yml
+- type: CLI
+  url: cli/onecli-cli.yml
+- type: MCPServer
+  url: mcp/onecli-mcp.yml
+- type: LLMsTxt
+  url: llms/onecli-llms.txt
+- type: Conventions
+  url: conventions/onecli-conventions.yml
+- type: ErrorCatalog
+  url: errors/onecli-error-codes.yml
+- type: Lifecycle
+  url: lifecycle/onecli-lifecycle.yml
+- type: ChangeLog
+  url: changelog/onecli-changelog.yml
+- type: Conformance
+  url: conformance/onecli-conformance.yml
+- type: DataModel
+  url: data-model/onecli-data-model.yml
+- type: AgentSkill
+  url: skills/_index.yml
+x-enrichment:
+  date: '2026-07-20'
+  status: enriched
+  artifacts_added: 20
+  pass: local-v1

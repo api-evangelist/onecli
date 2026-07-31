@@ -1,0 +1,22 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for OneCLI API
+  version: 1.0.0
+extends: openapi/onecli-openapi-original.yml
+actions:
+- target: $.info
+  update:
+    x-apievangelist-enriched: '2026-07-20'
+    x-apievangelist-source: https://onecli.sh/docs/openapi.yaml
+    x-api-evangelist-provider: onecli
+    x-authentication-model: bearer-api-key
+    x-error-format: custom-envelope
+    x-key-prefixes:
+    - oc_
+    - oc_org_
+    - oc_partner_
+- target: $.info
+  update:
+    x-onecli-base-urls:
+      cloud: https://api.onecli.sh/v1
+      self_hosted: http://localhost:10254/v1

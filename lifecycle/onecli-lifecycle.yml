@@ -1,0 +1,26 @@
+generated: '2026-07-20'
+method: searched
+source: https://onecli.sh/docs/api-reference
+versioning:
+  scheme: uri-path
+  current: v1
+  base_url: https://api.onecli.sh/v1
+  docs: https://onecli.sh/docs/api-reference
+deprecation:
+  policy_url: null
+  sunset_header: false
+  note: No documented deprecation/sunset policy found.
+sla:
+  url: null
+  uptime_target: null
+status_page: null
+release_notes:
+  scheme: github-releases
+  core: https://github.com/onecli/onecli/releases        # gateway/core, current v1.41.0
+  cli: https://github.com/onecli/onecli-cli/releases     # CLI, current v2.5.0
+  sdk: https://www.npmjs.com/package/@onecli-sh/sdk      # node SDK, current 2.7.0
+deprecated_operations: []
+notes:
+- No public status page (status.onecli.sh does not resolve) — no StatusPage pointer.
+- No documented deprecation policy or Sunset/Deprecation header support — no Deprecation pointer.
+- Versioning is documented via the /v1 base path; dated release history lives in GitHub Releases.

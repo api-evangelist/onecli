@@ -1,0 +1,44 @@
+generated: '2026-07-20'
+method: searched
+source: https://onecli.sh/docs/api-reference
+authentication:
+  style: bearer-api-key
+  header: "Authorization: Bearer <key>"
+  scoping: project (oc_) / organization (oc_org_ + X-Project-Id) / partner (oc_partner_)
+  ref: authentication/onecli-authentication.yml
+idempotency:
+  supported: false
+  note: >-
+    No Idempotency-Key header or idempotency contract is documented in the OpenAPI or
+    docs. Write operations rely on unique identifiers (e.g. agent identifier) that
+    return 409 Conflict on duplicates rather than idempotent replay.
+pagination:
+  style: none
+  note: >-
+    List endpoints (agents, secrets, connections, rules) return a bare array of all
+    items in the project scope; no cursor/offset/limit parameters are documented.
+long_polling:
+  supported: true
+  note: >-
+    Approval endpoints long-poll: GET /approvals holds the connection open up to
+    `timeoutSeconds`, returning immediately when a pending approval exists.
+  operations:
+  - listPendingApprovals
+  - listOrgPendingApprovals
+versioning:
+  style: uri-path
+  current: v1
+  ref: lifecycle/onecli-lifecycle.yml
+error_envelope:
+  note: >-
+    Two shapes — a flat `error` string for validation errors, and
+    {error:{message,type}} for auth/service errors.
+  ref: errors/onecli-error-codes.yml
+rate_limiting:
+  note: >-
+    Rate limits are a policy-rule feature the gateway enforces on PROXIED downstream
+    requests (action `rate_limit` with rateLimit + rateLimitWindow), not a signal on
+    the management API. No RateLimit-* headers are documented on the management API.
+metadata: {}
+request_tracing:
+  note: No documented request-id / correlation header on the management API.
