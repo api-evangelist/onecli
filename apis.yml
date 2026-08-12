@@ -407,6 +407,8 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: Overlay
+  url: overlays/onecli-openapi-overlay.yaml
 - type: DomainSecurity
   url: security/onecli-domain-security.yml
 - type: AgenticAccess
