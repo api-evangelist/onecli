@@ -1,0 +1,39 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OneCLI Agent Setup Migration API",
+    "version": "1.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Migration",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Export data to OneCLI Cloud",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.onecli.sh/v1/migrate/export",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Exports the current self-hosted instance's data (secrets, agents, agent-secret assignments, rules) directly to OneCLI Cloud over HTTPS. Secrets are decrypted server-side and transmitted to Cloud; plaintext never reaches the caller.\n\nOnly available on self-hosted instances — Cloud returns 404.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

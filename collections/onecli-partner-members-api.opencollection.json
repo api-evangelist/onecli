@@ -1,0 +1,92 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OneCLI Agent Setup Partner Members API",
+    "version": "1.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Partner Members",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List partner members",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/partner/members"
+          },
+          "docs": "Returns the people who can sign in to your partner portal. Requires a Partner API key (`oc_partner_…`) or a partner portal session."
+        },
+        {
+          "info": {
+            "name": "Add a partner member",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.onecli.sh/v1/partner/members",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Adds a member to your partner by email; they sign in to the portal with that email. Only owners and admins can add members. The assignable roles are `admin` and `member` — the owner role is set at partner creation and can't be granted.\n"
+        },
+        {
+          "info": {
+            "name": "Change a member's role",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "https://api.onecli.sh/v1/partner/members/:userId/role",
+            "params": [
+              {
+                "name": "userId",
+                "value": "",
+                "type": "path",
+                "description": "ID of a partner member (the user)."
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Moves a member between `admin` and `member`. Only owners and admins can do this, and the owner's role can't be changed."
+        },
+        {
+          "info": {
+            "name": "Remove a partner member",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "https://api.onecli.sh/v1/partner/members/:userId",
+            "params": [
+              {
+                "name": "userId",
+                "value": "",
+                "type": "path",
+                "description": "ID of a partner member (the user)."
+              }
+            ]
+          },
+          "docs": "Removes a member from your partner. Only owners and admins can do this, and the owner can't be removed."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -1,0 +1,91 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OneCLI Agent Setup API",
+    "version": "1.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Agent Setup",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get container configuration",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/container-config",
+            "params": [
+              {
+                "name": "agent",
+                "value": "",
+                "type": "query",
+                "description": "Agent identifier. Omit to use the project's default agent (created on demand)."
+              }
+            ]
+          },
+          "docs": "Returns everything an agent orchestrator needs to route a container (or local process) through the OneCLI gateway: proxy environment variables, the gateway CA certificate, and any credential stub files. The server controls all env var names, values, and paths.\n"
+        },
+        {
+          "info": {
+            "name": "List credential stub agents",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/credential-stubs"
+          },
+          "docs": "Returns the agent frameworks that have credential stubs available."
+        },
+        {
+          "info": {
+            "name": "Get a credential stub",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/credential-stubs/:agent",
+            "params": [
+              {
+                "name": "agent",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Returns a placeholder credential file for the given agent framework (currently `codex`). The gateway injects real credentials at request time."
+        },
+        {
+          "info": {
+            "name": "Get the gateway skill",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/skill/gateway",
+            "params": [
+              {
+                "name": "agent_framework",
+                "value": "",
+                "type": "query",
+                "description": "Agent framework name (e.g. `claude`, `codex`)."
+              }
+            ]
+          },
+          "docs": "Returns the gateway skill as Markdown — instructions that teach a coding agent how to work behind the OneCLI gateway. Pass `agent_framework` for framework-specific content."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

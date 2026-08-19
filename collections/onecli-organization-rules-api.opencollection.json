@@ -1,0 +1,169 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OneCLI Agent Setup Organization Rules API",
+    "version": "1.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Organization Rules",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List organization rules",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/org/rules"
+          },
+          "docs": "Returns all policy rules scoped to the organization. Available on OneCLI Cloud and self-hosted Enterprise. Requires the admin or owner role."
+        },
+        {
+          "info": {
+            "name": "Create an organization rule",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.onecli.sh/v1/org/rules",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Creates a new policy rule at the organization level. Organization rules apply across all projects and cannot be assigned to specific agents. Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise.\n"
+        },
+        {
+          "info": {
+            "name": "Get an organization rule",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/org/rules/:ruleId",
+            "params": [
+              {
+                "name": "ruleId",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Available on OneCLI Cloud and self-hosted Enterprise. Requires the admin or owner role."
+        },
+        {
+          "info": {
+            "name": "Update an organization rule",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "https://api.onecli.sh/v1/org/rules/:ruleId",
+            "params": [
+              {
+                "name": "ruleId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise."
+        },
+        {
+          "info": {
+            "name": "Delete an organization rule",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "https://api.onecli.sh/v1/org/rules/:ruleId",
+            "params": [
+              {
+                "name": "ruleId",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise."
+        },
+        {
+          "info": {
+            "name": "Get app permissions",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/org/rules/permissions/:provider",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              }
+            ]
+          },
+          "docs": "Returns the layered tool-level permission states for a provider at the organization level. The shape matches the project endpoint (`{ defaults, byAgent }`), but organization rules are agent-less, so `byAgent` is always empty. Readable by all members. Available on OneCLI Cloud and self-hosted Enterprise.\n"
+        },
+        {
+          "info": {
+            "name": "Set app permissions",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "https://api.onecli.sh/v1/org/rules/permissions/:provider",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Updates tool-level permissions for a provider at the organization level. Organization permissions are agent-less: `agentId` and the `inherit` permission are not accepted here (they are project-scope concepts). Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise.\n"
+        },
+        {
+          "info": {
+            "name": "Count overlapping custom rules (organization)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/org/rules/overlap/:provider",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              }
+            ]
+          },
+          "docs": "Counts custom organization rules whose host patterns overlap the app's hosts. Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -1,0 +1,57 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OneCLI Agent Setup Utility API",
+    "version": "1.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Utility",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Health check",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/health"
+          },
+          "docs": "Returns the API's status and version. No authentication required."
+        },
+        {
+          "info": {
+            "name": "Get resource counts",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/counts"
+          },
+          "docs": "Returns the current project's resource totals."
+        },
+        {
+          "info": {
+            "name": "List vault connections",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/vaults"
+          },
+          "docs": "Returns the project's external vault connections (e.g. 1Password). Vault pairing and disconnect are performed on the gateway process, not this API."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

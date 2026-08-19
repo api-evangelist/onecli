@@ -1,0 +1,66 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OneCLI Agent Setup Approvals API",
+    "version": "1.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Approvals",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List pending approvals",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/approvals/pending",
+            "params": [
+              {
+                "name": "exclude",
+                "value": "",
+                "type": "query",
+                "description": "Comma-separated approval IDs to skip (already being handled) so the poll can hold open for genuinely new requests."
+              }
+            ]
+          },
+          "docs": "Long-polls for manual-approval requests awaiting a decision in the current project. Returns immediately when any are pending, otherwise holds the connection open (up to `timeoutSeconds`) until one arrives or the poll times out.\n\nAuthenticate with a project API key, or an organization key plus an `X-Project-Id` header. Submit each decision to `POST /approvals/{id}/decision`.\n"
+        },
+        {
+          "info": {
+            "name": "Submit an approval decision",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.onecli.sh/v1/approvals/:id/decision",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path",
+                "description": "The approval ID from `GET /approvals/pending`."
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Approve or deny a pending manual-approval request. Approving forwards the held request to its upstream service; denying blocks it. Scope the call to the request's project with a project API key or an `X-Project-Id` header.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

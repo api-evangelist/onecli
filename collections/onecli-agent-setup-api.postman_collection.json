@@ -1,0 +1,545 @@
+{
+  "item": [
+    {
+      "id": "26671bce-0af1-4a79-8f69-3323bcb1ae8e",
+      "name": "Agent Setup",
+      "description": {
+        "content": "Endpoints agents and orchestrators use to bootstrap gateway access (container config, credential stubs, gateway skill).",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "c8f1e403-1025-4315-a87d-bcd09334ce78",
+          "name": "Get container configuration",
+          "request": {
+            "name": "Get container configuration",
+            "description": {
+              "content": "Returns everything an agent orchestrator needs to route a container (or local process) through the OneCLI gateway: proxy environment variables, the gateway CA certificate, and any credential stub files. The server controls all env var names, values, and paths.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "container-config"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "agent",
+                  "value": "<string>",
+                  "description": "Agent identifier. Omit to use the project's default agent (created on demand)."
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "358e266d-d169-4e40-ae7e-cdf187723090",
+              "name": "Container configuration",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "container-config"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "agent",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"env\": {\n    \"key_0\": \"string\",\n    \"key_1\": \"string\"\n  },\n  \"caCertificate\": \"string\",\n  \"caCertificateContainerPath\": \"string\",\n  \"credentialStubs\": [\n    {\n      \"containerPath\": \"string\",\n      \"content\": \"string\"\n    },\n    {\n      \"containerPath\": \"string\",\n      \"content\": \"string\"\n    }\n  ],\n  \"warnings\": [\n    \"string\",\n    \"string\"\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "76195a3b-fac7-40e6-b59c-2a31c91237a5",
+              "name": "No agent with the given identifier exists (`code: AGENT_NOT_FOUND`)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "container-config"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "agent",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "0bcc6bf6-a2ad-4b3a-bc1d-654c5695ec93",
+              "name": "CA certificate not available (gateway not started yet)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "container-config"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "agent",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Service Unavailable",
+              "code": 503,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "64776249-6c39-474c-be9f-23a42caf870b",
+          "name": "List credential stub agents",
+          "request": {
+            "name": "List credential stub agents",
+            "description": {
+              "content": "Returns the agent frameworks that have credential stubs available.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "credential-stubs"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "4eb6f522-1d8a-42d1-a368-ea67c1e459d7",
+              "name": "Available agents",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "credential-stubs"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"agents\": [\n    \"codex\"\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "242b199d-48d2-4762-ae2b-5328299c2101",
+          "name": "Get a credential stub",
+          "request": {
+            "name": "Get a credential stub",
+            "description": {
+              "content": "Returns a placeholder credential file for the given agent framework (currently `codex`). The gateway injects real credentials at request time.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "credential-stubs",
+                ":agent"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "agent",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "3bdb0072-36e1-42b4-97d2-9d0c184332f6",
+              "name": "Credential stub",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "credential-stubs",
+                    ":agent"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "agent",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"agent\": \"string\",\n  \"filePath\": \"~/.codex/auth.json\",\n  \"content\": \"string\",\n  \"authMode\": \"api-key\",\n  \"permissions\": \"0600\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "a43e8713-3c81-43ff-b06e-f0e46df1a7ec",
+              "name": "No credential stub for this agent",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "credential-stubs",
+                    ":agent"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "agent",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "66f2f10e-f720-4b0d-b05f-9b436e471b16",
+          "name": "Get the gateway skill",
+          "request": {
+            "name": "Get the gateway skill",
+            "description": {
+              "content": "Returns the gateway skill as Markdown — instructions that teach a coding agent how to work behind the OneCLI gateway. Pass `agent_framework` for framework-specific content.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "skill",
+                "gateway"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "agent_framework",
+                  "value": "<string>",
+                  "description": "Agent framework name (e.g. `claude`, `codex`)."
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "text/markdown"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "9bf553df-6084-4c08-b27d-120650753a0c",
+              "name": "Skill content",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "skill",
+                    "gateway"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "agent_framework",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "text/markdown"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/markdown"
+                }
+              ],
+              "body": "string",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.onecli.sh/v1",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{bearerToken}}"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "175343c3-62c3-4dd2-97d5-6c98ba30b310",
+    "name": "OneCLI Agent Setup API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.\n\n**Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)\n\n## Authentication\n\nAll endpoints require authentication via one of:\n\n- **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.\n- **Session** — Cookie-based session from the web dashboard.\n\nFor organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.\n",
+      "type": "text/plain"
+    }
+  }
+}

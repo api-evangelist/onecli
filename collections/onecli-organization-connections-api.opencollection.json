@@ -1,0 +1,83 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OneCLI Agent Setup Organization Connections API",
+    "version": "1.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Organization Connections",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List organization connections",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/org/connections",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "query",
+                "description": "Filter results to a single provider (e.g. `gmail`, `github`)"
+              }
+            ]
+          },
+          "docs": "Returns all app connections scoped to the organization. Filter with the `provider` query parameter. Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise."
+        },
+        {
+          "info": {
+            "name": "Rename an organization connection",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "https://api.onecli.sh/v1/org/connections/:connectionId",
+            "params": [
+              {
+                "name": "connectionId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Sets the display label of an organization connection. Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise."
+        },
+        {
+          "info": {
+            "name": "Disconnect an organization connection",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "https://api.onecli.sh/v1/org/connections/:connectionId",
+            "params": [
+              {
+                "name": "connectionId",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

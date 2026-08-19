@@ -1,0 +1,340 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OneCLI Agent Setup Apps API",
+    "version": "1.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Apps",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List apps",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/apps"
+          },
+          "docs": "Returns all available apps with their current configuration and connection status."
+        },
+        {
+          "info": {
+            "name": "Get app details",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/apps/:provider",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              }
+            ]
+          },
+          "docs": "Returns detailed information about a specific app, including setup instructions."
+        },
+        {
+          "info": {
+            "name": "Start OAuth flow",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/apps/:provider/authorize",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              },
+              {
+                "name": "connectionId",
+                "value": "",
+                "type": "query",
+                "description": "Reconnect an existing connection instead of creating a new one"
+              },
+              {
+                "name": "agent_name",
+                "value": "",
+                "type": "query",
+                "description": "Agent name to associate with the connection"
+              }
+            ]
+          },
+          "docs": "Redirects the user to the app's OAuth authorization page. After the user authorizes, they are redirected back to the callback URL.\n\nThis endpoint is typically opened in a browser, not called from code.\n"
+        },
+        {
+          "info": {
+            "name": "Connect app with credentials",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.onecli.sh/v1/apps/:provider/connect",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Connects an app using direct credentials (API key, service account, etc.) rather than OAuth."
+        },
+        {
+          "info": {
+            "name": "Get app configuration",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/apps/:provider/config",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              }
+            ]
+          },
+          "docs": "Returns the non-secret configuration for a BYOC (Bring Your Own Credentials) app."
+        },
+        {
+          "info": {
+            "name": "Set app configuration",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.onecli.sh/v1/apps/:provider/config",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Creates or updates the BYOC configuration for an app. Existing connections may be disconnected when credentials change.\n\nThe accepted field names are defined per app (e.g. `clientId`/`clientSecret` for OAuth apps; `appId`/`appSlug`/`privateKey` for `github-app`). Unknown keys are stripped.\n"
+        },
+        {
+          "info": {
+            "name": "Delete app configuration",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "https://api.onecli.sh/v1/apps/:provider/config",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              }
+            ]
+          },
+          "docs": "Delete app configuration"
+        },
+        {
+          "info": {
+            "name": "Toggle app configuration",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "https://api.onecli.sh/v1/apps/:provider/config/toggle",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Enables or disables a provider's BYOC configuration in the current project."
+        },
+        {
+          "info": {
+            "name": "List configured providers",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/apps/configured"
+          },
+          "docs": "Returns provider IDs with an enabled BYOC configuration in the current project."
+        },
+        {
+          "info": {
+            "name": "List providers with platform default credentials",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/apps/env-defaults"
+          },
+          "docs": "Returns provider IDs whose OAuth credentials are supplied by the deployment's environment, so they work without BYOC configuration."
+        },
+        {
+          "info": {
+            "name": "List app permission definitions",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/apps/permission-definitions"
+          },
+          "docs": "Returns the tool catalog of every app that has one — the read/write groups and tool IDs that the permissions endpoints operate on. Global data; works without a project context, so organization keys can call it without `X-Project-Id`.\n"
+        },
+        {
+          "info": {
+            "name": "Get app permission definition",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/apps/:provider/permission-definition",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              }
+            ]
+          },
+          "docs": "Returns the app's static tool catalog — the read/write groups and tool IDs that the permissions endpoints (`/rules/permissions/{provider}` and `/org/rules/permissions/{provider}`) operate on. Global data; works without a project context, so organization keys can call it without `X-Project-Id`.\n"
+        },
+        {
+          "info": {
+            "name": "Get blocklist state",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/apps/:provider/blocklist",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              }
+            ]
+          },
+          "docs": "Returns the blocklist state for a provider — the app's predefined hosts (with their activation state) and any custom rules."
+        },
+        {
+          "info": {
+            "name": "Activate or add a blocklist entry",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.onecli.sh/v1/apps/:provider/blocklist",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Provide either `{ hostId }` to activate one of the app's predefined blocklist hosts, or `{ name, hostPattern }` to add a custom blocklist rule.\n"
+        },
+        {
+          "info": {
+            "name": "Toggle a blocklist rule",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "https://api.onecli.sh/v1/apps/:provider/blocklist/:ruleId",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              },
+              {
+                "name": "ruleId",
+                "value": "",
+                "type": "path",
+                "description": "Blocklist rule ID (from the blocklist state's `ruleId` field)"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Toggle a blocklist rule"
+        },
+        {
+          "info": {
+            "name": "Remove a blocklist rule",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "https://api.onecli.sh/v1/apps/:provider/blocklist/:ruleId",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              },
+              {
+                "name": "ruleId",
+                "value": "",
+                "type": "path",
+                "description": "Blocklist rule ID (from the blocklist state's `ruleId` field)"
+              }
+            ]
+          },
+          "docs": "Remove a blocklist rule"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

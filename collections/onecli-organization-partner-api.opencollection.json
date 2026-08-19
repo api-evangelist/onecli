@@ -1,0 +1,57 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OneCLI Agent Setup Organization Partner API",
+    "version": "1.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Organization Partner",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List inherited partner secrets",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/org/partner/inherited-secrets"
+          },
+          "docs": "Returns the partner-level secrets this organization inherits (read-only). Empty if the organization has no partner or has detached. Authenticate with your organization API key or session."
+        },
+        {
+          "info": {
+            "name": "Get partner status",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/org/partner/status"
+          },
+          "docs": "Returns whether this organization is managed by a partner and whether it has detached. Requires the admin or owner role."
+        },
+        {
+          "info": {
+            "name": "Detach from partner",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.onecli.sh/v1/org/partner/detach"
+          },
+          "docs": "Stops this organization from inheriting partner secrets while keeping its partner attribution. Requires the admin or owner role."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

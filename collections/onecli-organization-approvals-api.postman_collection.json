@@ -1,0 +1,185 @@
+{
+  "item": [
+    {
+      "id": "ccfd272c-0cd0-4453-9419-66e3dd6c7233",
+      "name": "Organization Approvals",
+      "description": {
+        "content": "Long-poll for manual-approval requests across every project in the organization. Available on OneCLI Cloud and self-hosted Enterprise.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "9ac3d2b3-2562-40f7-9f8b-f7edfb3e1aa7",
+          "name": "List pending approvals across the organization",
+          "request": {
+            "name": "List pending approvals across the organization",
+            "description": {
+              "content": "Long-polls for manual-approval requests awaiting a decision across **every** project in the organization. Returns immediately when any are pending, otherwise holds the connection open (up to `timeoutSeconds`) until one arrives or the poll times out.\n\nEach request carries its own `projectId`; submit the decision to the existing `POST /approvals/{id}/decision` route with that project's `X-Project-Id`. Authenticate with an organization API key (`oc_org_...`) — the poll itself sends no `X-Project-Id`. Requires the admin or owner role. Available on OneCLI Cloud and self-hosted Enterprise.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "org",
+                "approvals",
+                "pending"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "exclude",
+                  "value": "<string>",
+                  "description": "Comma-separated approval IDs to skip (already being handled) so the poll can hold open for genuinely new requests."
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "8a74f017-f0bd-41b2-989b-b640f8ae3576",
+              "name": "Pending approval requests across the organization",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "org",
+                    "approvals",
+                    "pending"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "exclude",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"requests\": [\n    {\n      \"id\": \"string\",\n      \"projectId\": \"string\",\n      \"method\": \"string\",\n      \"url\": \"string\",\n      \"host\": \"string\",\n      \"path\": \"string\",\n      \"headers\": {\n        \"key_0\": \"string\",\n        \"key_1\": \"string\"\n      },\n      \"bodyPreview\": \"string\",\n      \"summary\": {},\n      \"agent\": {\n        \"id\": \"string\",\n        \"name\": \"string\",\n        \"externalId\": \"string\"\n      },\n      \"createdAt\": \"2021-08-18T04:29:24.160Z\",\n      \"expiresAt\": \"2024-01-15T16:33:49.189Z\"\n    },\n    {\n      \"id\": \"string\",\n      \"projectId\": \"string\",\n      \"method\": \"string\",\n      \"url\": \"string\",\n      \"host\": \"string\",\n      \"path\": \"string\",\n      \"headers\": {\n        \"key_0\": \"string\",\n        \"key_1\": \"string\"\n      },\n      \"bodyPreview\": \"string\",\n      \"summary\": {},\n      \"agent\": {\n        \"id\": \"string\",\n        \"name\": \"string\",\n        \"externalId\": \"string\"\n      },\n      \"createdAt\": \"1991-11-18T03:33:14.261Z\",\n      \"expiresAt\": \"1998-09-22T13:04:32.757Z\"\n    }\n  ],\n  \"timeoutSeconds\": 7959\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "74fa36bb-e17e-461b-a4ea-0640812f5b60",
+              "name": "Insufficient permissions (requires an organization API key with the admin or owner role)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "org",
+                    "approvals",
+                    "pending"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "exclude",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.onecli.sh/v1",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{bearerToken}}"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "ab3d858c-b8da-4f33-9ca1-8488c6e603d1",
+    "name": "OneCLI Agent Setup Organization Approvals API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.\n\n**Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)\n\n## Authentication\n\nAll endpoints require authentication via one of:\n\n- **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.\n- **Session** — Cookie-based session from the web dashboard.\n\nFor organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.\n",
+      "type": "text/plain"
+    }
+  }
+}

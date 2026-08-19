@@ -1,0 +1,194 @@
+{
+  "item": [
+    {
+      "id": "a85d0aff-53cb-4835-88ef-b7e332aeac2f",
+      "name": "Migration",
+      "description": {
+        "content": "Migrate data from a self-hosted instance to OneCLI Cloud.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "c876a36b-cba7-45ee-b385-a5feb2eee898",
+          "name": "Export data to OneCLI Cloud",
+          "request": {
+            "name": "Export data to OneCLI Cloud",
+            "description": {
+              "content": "Exports the current self-hosted instance's data (secrets, agents, agent-secret assignments, rules) directly to OneCLI Cloud over HTTPS. Secrets are decrypted server-side and transmitted to Cloud; plaintext never reaches the caller.\n\nOnly available on self-hosted instances — Cloud returns 404.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "migrate",
+                "export"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cloudApiKey\": \"<string>\",\n  \"cloudUrl\": \"<uri>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "9c672564-7398-4175-bc8a-14b867c4bc6e",
+              "name": "Migration result",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "migrate",
+                    "export"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"cloudApiKey\": \"<string>\",\n  \"cloudUrl\": \"<uri>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"imported\": {\n    \"secrets\": 6350,\n    \"agents\": 2001,\n    \"agentSecrets\": 2990,\n    \"rules\": 5973\n  },\n  \"skipped\": [\n    {\n      \"type\": \"string\",\n      \"name\": \"string\",\n      \"reason\": \"string\"\n    },\n    {\n      \"type\": \"string\",\n      \"name\": \"string\",\n      \"reason\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "6ac23155-5aeb-4bfb-a6b9-928642a00e90",
+              "name": "Validation error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "migrate",
+                    "export"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"cloudApiKey\": \"<string>\",\n  \"cloudUrl\": \"<uri>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.onecli.sh/v1",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{bearerToken}}"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "c4bddf16-0178-4143-a776-d58a3470c70e",
+    "name": "OneCLI Agent Setup Migration API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.\n\n**Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)\n\n## Authentication\n\nAll endpoints require authentication via one of:\n\n- **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.\n- **Session** — Cookie-based session from the web dashboard.\n\nFor organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.\n",
+      "type": "text/plain"
+    }
+  }
+}

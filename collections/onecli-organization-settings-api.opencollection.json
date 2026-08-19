@@ -1,0 +1,50 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OneCLI Agent Setup Organization Settings API",
+    "version": "1.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Organization Settings",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get organization settings",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/org/settings"
+          },
+          "docs": "Returns the organization's settings. Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise."
+        },
+        {
+          "info": {
+            "name": "Update organization settings",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "https://api.onecli.sh/v1/org/settings",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Updates the organization's policy mode. Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

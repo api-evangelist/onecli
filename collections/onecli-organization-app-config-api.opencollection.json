@@ -1,0 +1,269 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OneCLI Agent Setup Organization App Config API",
+    "version": "1.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Organization App Config",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Start organization OAuth flow",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/org/apps/:provider/authorize",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              },
+              {
+                "name": "connectionId",
+                "value": "",
+                "type": "query",
+                "description": "Reconnect an existing organization connection instead of creating a new one"
+              },
+              {
+                "name": "org",
+                "value": "",
+                "type": "query",
+                "description": "Target organization ID when the caller belongs to several organizations. Defaults to the organization derived from the credentials."
+              }
+            ]
+          },
+          "docs": "Starts an OAuth flow that creates the connection at the organization level, shared by every project in the organization. Redirects to the app's OAuth authorization page; the flow completes on the shared `/apps/{provider}/callback` endpoint, so no extra redirect URI registration is needed.\n\nTypically opened in a browser. With an organization API key the target organization is derived from the key. Available on OneCLI Cloud and self-hosted Enterprise. Requires the admin or owner role.\n"
+        },
+        {
+          "info": {
+            "name": "Connect app at the organization level",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.onecli.sh/v1/org/apps/:provider/connect",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Connects an app using direct credentials (API key, service account, etc.) at the organization level. The connection is shared by every project in the organization. Available on OneCLI Cloud and self-hosted Enterprise. Requires admin role."
+        },
+        {
+          "info": {
+            "name": "List configured providers",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/org/apps/configured"
+          },
+          "docs": "Returns provider IDs with an enabled app configuration at the organization level. Available on OneCLI Cloud and self-hosted Enterprise. Requires the admin or owner role."
+        },
+        {
+          "info": {
+            "name": "Get organization app configuration",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/org/apps/:provider/config",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              }
+            ]
+          },
+          "docs": "Returns the non-secret configuration for a BYOC app at the organization level. Available on OneCLI Cloud and self-hosted Enterprise. Requires the admin or owner role."
+        },
+        {
+          "info": {
+            "name": "Set organization app configuration",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.onecli.sh/v1/org/apps/:provider/config",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Creates or updates the BYOC configuration for an app at the organization level. The accepted field names are defined per app (e.g. `clientId`/`clientSecret` for OAuth apps); unknown keys are stripped. Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise.\n"
+        },
+        {
+          "info": {
+            "name": "Delete organization app configuration",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "https://api.onecli.sh/v1/org/apps/:provider/config",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              }
+            ]
+          },
+          "docs": "Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise."
+        },
+        {
+          "info": {
+            "name": "Toggle organization app configuration",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "https://api.onecli.sh/v1/org/apps/:provider/config/toggle",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Enables or disables an organization app configuration. Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise."
+        },
+        {
+          "info": {
+            "name": "Get organization blocklist state",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/org/apps/:provider/blocklist",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              }
+            ]
+          },
+          "docs": "Returns the blocklist state for a provider at the organization level. Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise."
+        },
+        {
+          "info": {
+            "name": "Activate or add an organization blocklist entry",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.onecli.sh/v1/org/apps/:provider/blocklist",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Provide either `{ hostId }` to activate a predefined blocklist host, or `{ name, hostPattern }` to add a custom rule — at the organization level. Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise.\n"
+        },
+        {
+          "info": {
+            "name": "Toggle an organization blocklist rule",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "https://api.onecli.sh/v1/org/apps/:provider/blocklist/:ruleId",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              },
+              {
+                "name": "ruleId",
+                "value": "",
+                "type": "path",
+                "description": "Blocklist rule ID (from the blocklist state's `ruleId` field)"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise."
+        },
+        {
+          "info": {
+            "name": "Remove an organization blocklist rule",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "https://api.onecli.sh/v1/org/apps/:provider/blocklist/:ruleId",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              },
+              {
+                "name": "ruleId",
+                "value": "",
+                "type": "path",
+                "description": "Blocklist rule ID (from the blocklist state's `ruleId` field)"
+              }
+            ]
+          },
+          "docs": "Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

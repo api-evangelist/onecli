@@ -1,0 +1,169 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OneCLI Agent Setup Rules API",
+    "version": "1.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Rules",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List policy rules",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/rules"
+          },
+          "docs": "Returns all policy rules for the current project."
+        },
+        {
+          "info": {
+            "name": "Create a policy rule",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.onecli.sh/v1/rules",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Creates a new policy rule. Rules control how agents interact with external services:\n\n- **block** — reject matching requests outright.\n- **rate_limit** — allow up to N requests per time window. Requires `rateLimit` and `rateLimitWindow`.\n- **manual_approval** — hold matching requests for human approval before forwarding.\n- **allow** — explicitly allow matching requests (used to carve exceptions in deny mode or shadow a broader rule).\n"
+        },
+        {
+          "info": {
+            "name": "Get a policy rule",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/rules/:ruleId",
+            "params": [
+              {
+                "name": "ruleId",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Returns a single policy rule by ID."
+        },
+        {
+          "info": {
+            "name": "Update a policy rule",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "https://api.onecli.sh/v1/rules/:ruleId",
+            "params": [
+              {
+                "name": "ruleId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Updates one or more fields on a rule. At least one field must be provided."
+        },
+        {
+          "info": {
+            "name": "Delete a policy rule",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "https://api.onecli.sh/v1/rules/:ruleId",
+            "params": [
+              {
+                "name": "ruleId",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Delete a policy rule"
+        },
+        {
+          "info": {
+            "name": "Get app permissions (project)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/rules/permissions/:provider",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              }
+            ]
+          },
+          "docs": "Returns the layered tool-level permission states for a provider at the project scope: `defaults` holds the all-agents states, `byAgent` holds per-agent override layers. Tool IDs come from the app's permission definition (`GET /apps/{provider}/permission-definition`).\n"
+        },
+        {
+          "info": {
+            "name": "Set app permissions (project)",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "https://api.onecli.sh/v1/rules/permissions/:provider",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Updates tool-level permissions for a provider at the project scope.\n\nOmit `agentId` to write the all-agents defaults. Pass `agentId` to write one agent's override layer; there, the `inherit` permission removes the agent's override for a tool so it falls back to the all-agents setting.\n"
+        },
+        {
+          "info": {
+            "name": "Count overlapping custom rules (project)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/rules/overlap/:provider",
+            "params": [
+              {
+                "name": "provider",
+                "value": "",
+                "type": "path",
+                "description": "App provider identifier (e.g., `gmail`, `github`, `jira`)"
+              }
+            ]
+          },
+          "docs": "Counts custom project rules whose host patterns overlap the app's hosts — rules that may interfere with the app's permission settings."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -1,0 +1,2126 @@
+{
+  "item": [
+    {
+      "id": "31f444fb-a210-4228-8eb6-ef160820f7ad",
+      "name": "Apps",
+      "description": {
+        "content": "Manage app connections (OAuth and direct credentials), BYOC configuration, permission catalogs, and blocklists.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "9d5f3ce5-0445-4d99-8e89-26e2ed321309",
+          "name": "List apps",
+          "request": {
+            "name": "List apps",
+            "description": {
+              "content": "Returns all available apps with their current configuration and connection status.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "apps"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "1cbc9e24-cf67-47f2-a70a-1ff0bceaaad9",
+              "name": "List of apps",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": \"string\",\n    \"name\": \"string\",\n    \"available\": true,\n    \"connectionType\": \"cloud_only\",\n    \"configurable\": false,\n    \"config\": {\n      \"hasCredentials\": false,\n      \"enabled\": true\n    },\n    \"connections\": [\n      {\n        \"id\": \"string\",\n        \"label\": \"string\",\n        \"status\": \"string\",\n        \"scopes\": [\n          \"string\",\n          \"string\"\n        ],\n        \"connectedAt\": \"1998-12-30T14:21:08.305Z\"\n      },\n      {\n        \"id\": \"string\",\n        \"label\": \"string\",\n        \"status\": \"string\",\n        \"scopes\": [\n          \"string\",\n          \"string\"\n        ],\n        \"connectedAt\": \"1982-04-15T02:48:03.799Z\"\n      }\n    ],\n    \"credentialStubs\": [\n      {\n        \"path\": \"string\",\n        \"content\": {}\n      },\n      {\n        \"path\": \"string\",\n        \"content\": {}\n      }\n    ]\n  },\n  {\n    \"id\": \"string\",\n    \"name\": \"string\",\n    \"available\": true,\n    \"connectionType\": \"oauth\",\n    \"configurable\": false,\n    \"config\": {\n      \"hasCredentials\": false,\n      \"enabled\": false\n    },\n    \"connections\": [\n      {\n        \"id\": \"string\",\n        \"label\": \"string\",\n        \"status\": \"string\",\n        \"scopes\": [\n          \"string\",\n          \"string\"\n        ],\n        \"connectedAt\": \"1997-02-13T09:28:39.641Z\"\n      },\n      {\n        \"id\": \"string\",\n        \"label\": \"string\",\n        \"status\": \"string\",\n        \"scopes\": [\n          \"string\",\n          \"string\"\n        ],\n        \"connectedAt\": \"2019-04-26T16:48:49.933Z\"\n      }\n    ],\n    \"credentialStubs\": [\n      {\n        \"path\": \"string\",\n        \"content\": {}\n      },\n      {\n        \"path\": \"string\",\n        \"content\": {}\n      }\n    ]\n  }\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "58a86245-0178-4bba-b455-fd4dd71c9182",
+          "name": "Get app details",
+          "request": {
+            "name": "Get app details",
+            "description": {
+              "content": "Returns detailed information about a specific app, including setup instructions.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "apps",
+                ":provider"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "provider",
+                  "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "a4a414c2-4b22-4bf4-b812-9e5db42fe36c",
+              "name": "App details",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    ":provider"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"string\",\n  \"name\": \"string\",\n  \"available\": false,\n  \"connectionType\": \"cloud_only\",\n  \"configurable\": true,\n  \"config\": {\n    \"hasCredentials\": false,\n    \"enabled\": true\n  },\n  \"connections\": [\n    {\n      \"id\": \"string\",\n      \"label\": \"string\",\n      \"status\": \"string\",\n      \"scopes\": [\n        \"string\",\n        \"string\"\n      ],\n      \"connectedAt\": \"1974-05-28T17:41:44.927Z\"\n    },\n    {\n      \"id\": \"string\",\n      \"label\": \"string\",\n      \"status\": \"string\",\n      \"scopes\": [\n        \"string\",\n        \"string\"\n      ],\n      \"connectedAt\": \"2022-03-10T18:36:35.723Z\"\n    }\n  ],\n  \"credentialStubs\": [\n    {\n      \"path\": \"string\",\n      \"content\": {}\n    },\n    {\n      \"path\": \"string\",\n      \"content\": {}\n    }\n  ],\n  \"hint\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "f9c53fa5-039a-4a7d-83f7-7202698c6f56",
+              "name": "Unknown provider",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    ":provider"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "e31eba49-d106-4cb5-8485-8cfa7307cee9",
+          "name": "Start OAuth flow",
+          "request": {
+            "name": "Start OAuth flow",
+            "description": {
+              "content": "Redirects the user to the app's OAuth authorization page. After the user authorizes, they are redirected back to the callback URL.\n\nThis endpoint is typically opened in a browser, not called from code.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "apps",
+                ":provider",
+                "authorize"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "connectionId",
+                  "value": "<string>",
+                  "description": "Reconnect an existing connection instead of creating a new one"
+                },
+                {
+                  "disabled": false,
+                  "key": "agent_name",
+                  "value": "<string>",
+                  "description": "Agent name to associate with the connection"
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "provider",
+                  "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "ede9751d-974f-4cec-844c-bf87885232e0",
+              "name": "Redirect to OAuth provider",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    ":provider",
+                    "authorize"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "connectionId",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "agent_name",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Found",
+              "code": 302,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "9842d7da-16cd-4b25-a918-da227682b27a",
+              "name": "Provider not available or not configured",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    ":provider",
+                    "authorize"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "connectionId",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "agent_name",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "e1c229ef-12e8-4e78-932f-fa3f8f393f2a",
+          "name": "Connect app with credentials",
+          "request": {
+            "name": "Connect app with credentials",
+            "description": {
+              "content": "Connects an app using direct credentials (API key, service account, etc.) rather than OAuth.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "apps",
+                ":provider",
+                "connect"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "provider",
+                  "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": {\n    \"key_0\": \"<string>\"\n  },\n  \"connectionId\": \"<string>\",\n  \"label\": \"<string>\",\n  \"method\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "fb70d139-4bee-4061-a265-b527753ee92a",
+              "name": "Connected",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    ":provider",
+                    "connect"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fields\": {\n    \"apiKey\": \"sk-...\"\n  },\n  \"connectionId\": \"<string>\",\n  \"label\": \"<string>\",\n  \"method\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "8834dc60-5d6c-4d61-80b9-4f8abb12ad29",
+              "name": "Validation error or provider not available",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    ":provider",
+                    "connect"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fields\": {\n    \"apiKey\": \"sk-...\"\n  },\n  \"connectionId\": \"<string>\",\n  \"label\": \"<string>\",\n  \"method\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "68676698-5b75-45ea-808a-744e9b8a3129",
+          "name": "Get app configuration",
+          "request": {
+            "name": "Get app configuration",
+            "description": {
+              "content": "Returns the non-secret configuration for a BYOC (Bring Your Own Credentials) app.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "apps",
+                ":provider",
+                "config"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "provider",
+                  "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "6d3963b4-9360-4951-b460-5cbe0da13d38",
+              "name": "App configuration",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    ":provider",
+                    "config"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"settings\": {\n    \"key_0\": \"string\",\n    \"key_1\": \"string\",\n    \"key_2\": \"string\"\n  },\n  \"hasCredentials\": false,\n  \"enabled\": true\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "3d963f51-76d8-4367-840f-410ccdb1f2c6",
+          "name": "Set app configuration",
+          "request": {
+            "name": "Set app configuration",
+            "description": {
+              "content": "Creates or updates the BYOC configuration for an app. Existing connections may be disconnected when credentials change.\n\nThe accepted field names are defined per app (e.g. `clientId`/`clientSecret` for OAuth apps; `appId`/`appSlug`/`privateKey` for `github-app`). Unknown keys are stripped.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "apps",
+                ":provider",
+                "config"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "provider",
+                  "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"key_0\": \"<string>\",\n  \"key_1\": \"<string>\",\n  \"key_2\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "3d81aaf0-176e-4e60-9a47-768541acec25",
+              "name": "Configuration saved",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    ":provider",
+                    "config"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clientId\": \"1234567890.apps.googleusercontent.com\",\n  \"clientSecret\": \"GOCSPX-…\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "155d2e78-d7b1-4955-9396-a8719053dfc3",
+              "name": "Provider does not support configuration",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    ":provider",
+                    "config"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clientId\": \"1234567890.apps.googleusercontent.com\",\n  \"clientSecret\": \"GOCSPX-…\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "8b03de66-5feb-4fac-adb9-b9b323e1f786",
+          "name": "Delete app configuration",
+          "request": {
+            "name": "Delete app configuration",
+            "description": {},
+            "url": {
+              "path": [
+                "apps",
+                ":provider",
+                "config"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "provider",
+                  "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "4fcff4da-ae40-4779-8551-f10ebed65807",
+              "name": "Configuration deleted",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    ":provider",
+                    "config"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "No Content",
+              "code": 204,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "cc14607a-b0f1-4b4a-9e31-ee425179ca7f",
+          "name": "Toggle app configuration",
+          "request": {
+            "name": "Toggle app configuration",
+            "description": {
+              "content": "Enables or disables a provider's BYOC configuration in the current project.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "apps",
+                ":provider",
+                "config",
+                "toggle"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "provider",
+                  "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": \"<boolean>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "796a1fcb-b259-4d17-a0e9-1e541af4fc82",
+              "name": "Configuration toggled",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    ":provider",
+                    "config",
+                    "toggle"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"enabled\": \"<boolean>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "e4ca68f4-bd5d-45c9-b9aa-98f7197baccb",
+              "name": "Configuration not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    ":provider",
+                    "config",
+                    "toggle"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"enabled\": \"<boolean>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "6f8f038a-dd9b-4b96-8ad0-b22e61f90f43",
+          "name": "List configured providers",
+          "request": {
+            "name": "List configured providers",
+            "description": {
+              "content": "Returns provider IDs with an enabled BYOC configuration in the current project.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "apps",
+                "configured"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "677c031c-510a-4697-abd7-b9e6b7d06fc9",
+              "name": "List of configured provider IDs",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    "configured"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  \"string\",\n  \"string\"\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "df3d061e-b9bf-4a23-8f2b-db71d9552e0f",
+          "name": "List providers with platform default credentials",
+          "request": {
+            "name": "List providers with platform default credentials",
+            "description": {
+              "content": "Returns provider IDs whose OAuth credentials are supplied by the deployment's environment, so they work without BYOC configuration.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "apps",
+                "env-defaults"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "dfee0219-de27-4943-8ae9-a2c04fa1784b",
+              "name": "List of provider IDs",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    "env-defaults"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  \"string\",\n  \"string\"\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "6d5ca592-d946-4175-9706-b7a414557f49",
+          "name": "List app permission definitions",
+          "request": {
+            "name": "List app permission definitions",
+            "description": {
+              "content": "Returns the tool catalog of every app that has one — the read/write groups and tool IDs that the permissions endpoints operate on. Global data; works without a project context, so organization keys can call it without `X-Project-Id`.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "apps",
+                "permission-definitions"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "be046f0d-22b9-4197-a493-d9294bf76965",
+              "name": "Permission definitions",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    "permission-definitions"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"provider\": \"string\",\n    \"groups\": [\n      {\n        \"category\": \"read\",\n        \"tools\": [\n          {\n            \"id\": \"string\",\n            \"name\": \"string\",\n            \"description\": \"string\"\n          },\n          {\n            \"id\": \"string\",\n            \"name\": \"string\",\n            \"description\": \"string\"\n          }\n        ],\n        \"wildcard\": {\n          \"id\": \"string\",\n          \"name\": \"string\",\n          \"description\": \"string\"\n        }\n      },\n      {\n        \"category\": \"read\",\n        \"tools\": [\n          {\n            \"id\": \"string\",\n            \"name\": \"string\",\n            \"description\": \"string\"\n          },\n          {\n            \"id\": \"string\",\n            \"name\": \"string\",\n            \"description\": \"string\"\n          }\n        ],\n        \"wildcard\": {\n          \"id\": \"string\",\n          \"name\": \"string\",\n          \"description\": \"string\"\n        }\n      }\n    ]\n  },\n  {\n    \"provider\": \"string\",\n    \"groups\": [\n      {\n        \"category\": \"write\",\n        \"tools\": [\n          {\n            \"id\": \"string\",\n            \"name\": \"string\",\n            \"description\": \"string\"\n          },\n          {\n            \"id\": \"string\",\n            \"name\": \"string\",\n            \"description\": \"string\"\n          }\n        ],\n        \"wildcard\": {\n          \"id\": \"string\",\n          \"name\": \"string\",\n          \"description\": \"string\"\n        }\n      },\n      {\n        \"category\": \"write\",\n        \"tools\": [\n          {\n            \"id\": \"string\",\n            \"name\": \"string\",\n            \"description\": \"string\"\n          },\n          {\n            \"id\": \"string\",\n            \"name\": \"string\",\n            \"description\": \"string\"\n          }\n        ],\n        \"wildcard\": {\n          \"id\": \"string\",\n          \"name\": \"string\",\n          \"description\": \"string\"\n        }\n      }\n    ]\n  }\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "04601eb6-ba80-431e-8dc2-ada3625a7ada",
+          "name": "Get app permission definition",
+          "request": {
+            "name": "Get app permission definition",
+            "description": {
+              "content": "Returns the app's static tool catalog — the read/write groups and tool IDs that the permissions endpoints (`/rules/permissions/{provider}` and `/org/rules/permissions/{provider}`) operate on. Global data; works without a project context, so organization keys can call it without `X-Project-Id`.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "apps",
+                ":provider",
+                "permission-definition"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "provider",
+                  "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "d790ea83-0766-4dba-8686-b631e1ff6afe",
+              "name": "Permission definition",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    ":provider",
+                    "permission-definition"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"provider\": \"string\",\n  \"groups\": [\n    {\n      \"category\": \"read\",\n      \"tools\": [\n        {\n          \"id\": \"string\",\n          \"name\": \"string\",\n          \"description\": \"string\"\n        },\n        {\n          \"id\": \"string\",\n          \"name\": \"string\",\n          \"description\": \"string\"\n        }\n      ],\n      \"wildcard\": {\n        \"id\": \"string\",\n        \"name\": \"string\",\n        \"description\": \"string\"\n      }\n    },\n    {\n      \"category\": \"read\",\n      \"tools\": [\n        {\n          \"id\": \"string\",\n          \"name\": \"string\",\n          \"description\": \"string\"\n        },\n        {\n          \"id\": \"string\",\n          \"name\": \"string\",\n          \"description\": \"string\"\n        }\n      ],\n      \"wildcard\": {\n        \"id\": \"string\",\n        \"name\": \"string\",\n        \"description\": \"string\"\n      }\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "421059e1-e6c5-4b0a-a1c8-b1e65638d6a8",
+              "name": "Unknown provider or no permission definition",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    ":provider",
+                    "permission-definition"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "72f0a0ed-87ca-4876-a8c1-8d9a9dc77165",
+          "name": "Get blocklist state",
+          "request": {
+            "name": "Get blocklist state",
+            "description": {
+              "content": "Returns the blocklist state for a provider — the app's predefined hosts (with their activation state) and any custom rules.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "apps",
+                ":provider",
+                "blocklist"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "provider",
+                  "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "342d4b8c-f3cf-438f-8882-eb27bdb40a7a",
+              "name": "Blocklist state",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    ":provider",
+                    "blocklist"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"hostId\": \"string\",\n    \"ruleId\": \"string\",\n    \"enabled\": true,\n    \"custom\": false,\n    \"name\": \"string\",\n    \"hostPattern\": \"string\",\n    \"scope\": \"project\"\n  },\n  {\n    \"hostId\": \"string\",\n    \"ruleId\": \"string\",\n    \"enabled\": true,\n    \"custom\": false,\n    \"name\": \"string\",\n    \"hostPattern\": \"string\",\n    \"scope\": \"organization\"\n  }\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "63a840a8-f577-4f11-92cc-c0b1c2a80c4b",
+              "name": "Unknown provider",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    ":provider",
+                    "blocklist"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "726372eb-5641-4b31-8371-e4130f4a0f89",
+          "name": "Activate or add a blocklist entry",
+          "request": {
+            "name": "Activate or add a blocklist entry",
+            "description": {
+              "content": "Provide either `{ hostId }` to activate one of the app's predefined blocklist hosts, or `{ name, hostPattern }` to add a custom blocklist rule.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "apps",
+                ":provider",
+                "blocklist"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "provider",
+                  "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hostId\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "6d4cb2de-fc0d-4261-bfec-f98664e22a77",
+              "name": "Blocklist entry created or activated",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    ":provider",
+                    "blocklist"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"hostId\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"hostId\": \"string\",\n  \"ruleId\": \"string\",\n  \"enabled\": false,\n  \"custom\": false,\n  \"name\": \"string\",\n  \"hostPattern\": \"string\",\n  \"scope\": \"organization\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "9680fb6a-d82f-404b-8598-02e043c8e8eb",
+              "name": "Invalid request body",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    ":provider",
+                    "blocklist"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"hostId\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "bd3dc621-dd35-4ada-b5f0-ae4b5004fbee",
+          "name": "Toggle a blocklist rule",
+          "request": {
+            "name": "Toggle a blocklist rule",
+            "description": {},
+            "url": {
+              "path": [
+                "apps",
+                ":provider",
+                "blocklist",
+                ":ruleId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "provider",
+                  "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "ruleId",
+                  "description": "(Required) Blocklist rule ID (from the blocklist state's `ruleId` field)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": \"<boolean>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "47ad168e-84ef-4b3f-83dd-e2a9039f03f4",
+              "name": "Rule toggled",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    ":provider",
+                    "blocklist",
+                    ":ruleId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "ruleId",
+                      "description": "(Required) Blocklist rule ID (from the blocklist state's `ruleId` field)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"enabled\": \"<boolean>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "079108fc-ee24-4b90-90e4-7282c49133b7",
+          "name": "Remove a blocklist rule",
+          "request": {
+            "name": "Remove a blocklist rule",
+            "description": {},
+            "url": {
+              "path": [
+                "apps",
+                ":provider",
+                "blocklist",
+                ":ruleId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "provider",
+                  "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "ruleId",
+                  "description": "(Required) Blocklist rule ID (from the blocklist state's `ruleId` field)"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "91ce9619-6cf5-4e1d-a336-db42edcf00db",
+              "name": "Rule removed",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "apps",
+                    ":provider",
+                    "blocklist",
+                    ":ruleId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "ruleId",
+                      "description": "(Required) Blocklist rule ID (from the blocklist state's `ruleId` field)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "No Content",
+              "code": 204,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.onecli.sh/v1",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{bearerToken}}"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "750b8dd7-bb95-47ac-86f9-651374ec9ea8",
+    "name": "OneCLI Agent Setup Apps API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.\n\n**Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)\n\n## Authentication\n\nAll endpoints require authentication via one of:\n\n- **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.\n- **Session** — Cookie-based session from the web dashboard.\n\nFor organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.\n",
+      "type": "text/plain"
+    }
+  }
+}

@@ -1,0 +1,423 @@
+{
+  "item": [
+    {
+      "id": "516d4a51-1811-4c43-870c-613a0d5c1022",
+      "name": "Approvals",
+      "description": {
+        "content": "Long-poll for pending manual-approval requests and submit approve/deny decisions.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "83a02b0d-950e-47af-a678-5442cdcf260a",
+          "name": "List pending approvals",
+          "request": {
+            "name": "List pending approvals",
+            "description": {
+              "content": "Long-polls for manual-approval requests awaiting a decision in the current project. Returns immediately when any are pending, otherwise holds the connection open (up to `timeoutSeconds`) until one arrives or the poll times out.\n\nAuthenticate with a project API key, or an organization key plus an `X-Project-Id` header. Submit each decision to `POST /approvals/{id}/decision`.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "approvals",
+                "pending"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "exclude",
+                  "value": "<string>",
+                  "description": "Comma-separated approval IDs to skip (already being handled) so the poll can hold open for genuinely new requests."
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "1e7bdc22-96dc-4511-bcca-3effeacc1e38",
+              "name": "Pending approval requests in the project",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "approvals",
+                    "pending"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "exclude",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"requests\": [\n    {\n      \"id\": \"string\",\n      \"projectId\": \"string\",\n      \"method\": \"string\",\n      \"url\": \"string\",\n      \"host\": \"string\",\n      \"path\": \"string\",\n      \"headers\": {\n        \"key_0\": \"string\",\n        \"key_1\": \"string\"\n      },\n      \"bodyPreview\": \"string\",\n      \"summary\": {},\n      \"agent\": {\n        \"id\": \"string\",\n        \"name\": \"string\",\n        \"externalId\": \"string\"\n      },\n      \"createdAt\": \"1979-07-25T02:37:30.531Z\",\n      \"expiresAt\": \"1962-07-07T06:01:44.320Z\"\n    },\n    {\n      \"id\": \"string\",\n      \"projectId\": \"string\",\n      \"method\": \"string\",\n      \"url\": \"string\",\n      \"host\": \"string\",\n      \"path\": \"string\",\n      \"headers\": {\n        \"key_0\": \"string\"\n      },\n      \"bodyPreview\": \"string\",\n      \"summary\": {},\n      \"agent\": {\n        \"id\": \"string\",\n        \"name\": \"string\",\n        \"externalId\": \"string\"\n      },\n      \"createdAt\": \"2003-09-11T12:02:50.657Z\",\n      \"expiresAt\": \"1999-04-23T01:06:21.416Z\"\n    }\n  ],\n  \"timeoutSeconds\": 9804\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "d9afe80e-bcaf-42fa-b934-3483b319dce6",
+              "name": "No project context (send an `X-Project-Id` header with an organization key, or use a project key)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "approvals",
+                    "pending"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "exclude",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "09b9a81b-8473-40c0-8230-47d27d59eac6",
+          "name": "Submit an approval decision",
+          "request": {
+            "name": "Submit an approval decision",
+            "description": {
+              "content": "Approve or deny a pending manual-approval request. Approving forwards the held request to its upstream service; denying blocks it. Scope the call to the request's project with a project API key or an `X-Project-Id` header.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "approvals",
+                ":id",
+                "decision"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "id",
+                  "description": "(Required) The approval ID from `GET /approvals/pending`."
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "72355505-492c-443f-a121-b834007e402f",
+              "name": "Decision recorded and the held request released",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "approvals",
+                    ":id",
+                    "decision"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) The approval ID from `GET /approvals/pending`."
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"decision\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "0f200cae-c2f4-421c-a154-dab52df2b550",
+              "name": "No pending approval with that ID in this project",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "approvals",
+                    ":id",
+                    "decision"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) The approval ID from `GET /approvals/pending`."
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"decision\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "5694c0d9-2780-41ec-973a-5b65a4edb749",
+              "name": "The approval expired before the decision was submitted (it was auto-denied)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "approvals",
+                    ":id",
+                    "decision"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) The approval ID from `GET /approvals/pending`."
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"decision\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Gone",
+              "code": 410,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.onecli.sh/v1",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{bearerToken}}"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "7ec2bf01-ddb5-45a6-9e20-702c69d7a755",
+    "name": "OneCLI Agent Setup Approvals API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.\n\n**Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)\n\n## Authentication\n\nAll endpoints require authentication via one of:\n\n- **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.\n- **Session** — Cookie-based session from the web dashboard.\n\nFor organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.\n",
+      "type": "text/plain"
+    }
+  }
+}

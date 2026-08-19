@@ -1,0 +1,122 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OneCLI Agent Setup Partner Organizations API",
+    "version": "1.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Partner Organizations",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List partner organizations",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/partner/orgs"
+          },
+          "docs": "Returns all organizations created by your partner account, including each one's claim status. Requires a Partner API key (`oc_partner_…`)."
+        },
+        {
+          "info": {
+            "name": "Create an organization",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.onecli.sh/v1/partner/orgs",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Creates an organization for a customer, with a default project, an organization-scoped API key, a project-scoped API key, a default agent token, and a claim link.\n\nThese tokens are returned **once** in this response and are never shown again — store them when you create the organization.\n"
+        },
+        {
+          "info": {
+            "name": "Get an organization",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/partner/orgs/:orgId",
+            "params": [
+              {
+                "name": "orgId",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Returns a single organization you manage, including its claim status and projects."
+        },
+        {
+          "info": {
+            "name": "Delete an unclaimed organization",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "https://api.onecli.sh/v1/partner/orgs/:orgId",
+            "params": [
+              {
+                "name": "orgId",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Permanently deletes an organization and all of its content. Only allowed while the organization is unclaimed."
+        },
+        {
+          "info": {
+            "name": "Reissue a claim link",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.onecli.sh/v1/partner/orgs/:orgId/claim-link",
+            "params": [
+              {
+                "name": "orgId",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Generates a new claim link for an unclaimed organization, invalidating the previous one. Only allowed while the organization is unclaimed."
+        },
+        {
+          "info": {
+            "name": "Rotate organization tokens",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.onecli.sh/v1/partner/orgs/:orgId/rotate-tokens",
+            "params": [
+              {
+                "name": "orgId",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Mints a new organization-scoped API key and default project API key for an unclaimed organization. The previous keys stop working immediately."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

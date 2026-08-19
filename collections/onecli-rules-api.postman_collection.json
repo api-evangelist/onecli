@@ -1,0 +1,1232 @@
+{
+  "item": [
+    {
+      "id": "b862d51d-ca4f-4e10-86ad-4e26a8b23afd",
+      "name": "Rules",
+      "description": {
+        "content": "Manage policy rules that control how agents interact with external services.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "5b5fedbf-94ea-45cb-a7cf-736b3c069175",
+          "name": "List policy rules",
+          "request": {
+            "name": "List policy rules",
+            "description": {
+              "content": "Returns all policy rules for the current project.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "rules"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "a6def551-3ffb-436c-bf4b-0b72587c71e2",
+              "name": "List of rules",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "rules"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": \"string\",\n    \"name\": \"string\",\n    \"hostPattern\": \"string\",\n    \"pathPattern\": \"string\",\n    \"method\": \"PUT\",\n    \"action\": \"manual_approval\",\n    \"enabled\": true,\n    \"agentId\": \"string\",\n    \"rateLimit\": 2670,\n    \"rateLimitWindow\": \"hour\",\n    \"scope\": \"project\",\n    \"metadata\": {},\n    \"conditions\": [\n      {\n        \"target\": \"body\",\n        \"operator\": \"contains\",\n        \"value\": \"string\",\n        \"key\": \"string\"\n      },\n      {\n        \"target\": \"body\",\n        \"operator\": \"contains\",\n        \"value\": \"string\",\n        \"key\": \"string\"\n      }\n    ],\n    \"createdAt\": \"2002-05-05T00:39:12.799Z\"\n  },\n  {\n    \"id\": \"string\",\n    \"name\": \"string\",\n    \"hostPattern\": \"string\",\n    \"pathPattern\": \"string\",\n    \"method\": \"PATCH\",\n    \"action\": \"block\",\n    \"enabled\": true,\n    \"agentId\": \"string\",\n    \"rateLimit\": 5899,\n    \"rateLimitWindow\": null,\n    \"scope\": \"organization\",\n    \"metadata\": {},\n    \"conditions\": [\n      {\n        \"target\": \"body\",\n        \"operator\": \"contains\",\n        \"value\": \"string\",\n        \"key\": \"string\"\n      },\n      {\n        \"target\": \"body\",\n        \"operator\": \"contains\",\n        \"value\": \"string\",\n        \"key\": \"string\"\n      }\n    ],\n    \"createdAt\": \"1991-09-01T00:09:43.310Z\"\n  }\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "f1504600-ab96-4aef-898b-0fec17e69eb3",
+          "name": "Create a policy rule",
+          "request": {
+            "name": "Create a policy rule",
+            "description": {
+              "content": "Creates a new policy rule. Rules control how agents interact with external services:\n\n- **block** — reject matching requests outright.\n- **rate_limit** — allow up to N requests per time window. Requires `rateLimit` and `rateLimitWindow`.\n- **manual_approval** — hold matching requests for human approval before forwarding.\n- **allow** — explicitly allow matching requests (used to carve exceptions in deny mode or shadow a broader rule).\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "rules"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"<string>\",\n  \"hostPattern\": \"<string>\",\n  \"action\": \"<string>\",\n  \"enabled\": \"<boolean>\",\n  \"pathPattern\": \"<string>\",\n  \"method\": \"<string>\",\n  \"agentId\": \"<string>\",\n  \"rateLimit\": \"<integer>\",\n  \"rateLimitWindow\": \"<string>\",\n  \"conditions\": [\n    {\n      \"target\": \"<string>\",\n      \"operator\": \"<string>\",\n      \"value\": \"<string>\",\n      \"key\": \"<string>\"\n    },\n    {\n      \"target\": \"<string>\",\n      \"operator\": \"<string>\",\n      \"value\": \"<string>\",\n      \"key\": \"<string>\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "de787a63-5cca-4f7c-8133-c62e85253d51",
+              "name": "Rule created",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "rules"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Block destructive GitHub API calls\",\n  \"hostPattern\": \"api.github.com\",\n  \"action\": \"<string>\",\n  \"enabled\": \"<boolean>\",\n  \"pathPattern\": \"/repos/*/delete\",\n  \"method\": \"<string>\",\n  \"agentId\": \"<string>\",\n  \"rateLimit\": \"<integer>\",\n  \"rateLimitWindow\": \"<string>\",\n  \"conditions\": [\n    {\n      \"target\": \"body\",\n      \"operator\": \"contains\",\n      \"value\": \"string\",\n      \"key\": \"string\"\n    },\n    {\n      \"target\": \"body\",\n      \"operator\": \"contains\",\n      \"value\": \"string\",\n      \"key\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"string\",\n  \"name\": \"string\",\n  \"hostPattern\": \"string\",\n  \"pathPattern\": \"string\",\n  \"method\": \"PATCH\",\n  \"action\": \"block\",\n  \"enabled\": false,\n  \"agentId\": \"string\",\n  \"rateLimit\": 1960,\n  \"rateLimitWindow\": \"minute\",\n  \"scope\": \"organization\",\n  \"metadata\": {},\n  \"conditions\": [\n    {\n      \"target\": \"body\",\n      \"operator\": \"contains\",\n      \"value\": \"string\",\n      \"key\": \"string\"\n    },\n    {\n      \"target\": \"body\",\n      \"operator\": \"contains\",\n      \"value\": \"string\",\n      \"key\": \"string\"\n    }\n  ],\n  \"createdAt\": \"1979-10-10T01:31:37.271Z\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "6bc038cc-7736-4607-bd5e-ac5607a99908",
+              "name": "Validation error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "rules"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Block destructive GitHub API calls\",\n  \"hostPattern\": \"api.github.com\",\n  \"action\": \"<string>\",\n  \"enabled\": \"<boolean>\",\n  \"pathPattern\": \"/repos/*/delete\",\n  \"method\": \"<string>\",\n  \"agentId\": \"<string>\",\n  \"rateLimit\": \"<integer>\",\n  \"rateLimitWindow\": \"<string>\",\n  \"conditions\": [\n    {\n      \"target\": \"body\",\n      \"operator\": \"contains\",\n      \"value\": \"string\",\n      \"key\": \"string\"\n    },\n    {\n      \"target\": \"body\",\n      \"operator\": \"contains\",\n      \"value\": \"string\",\n      \"key\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "c4e123cf-082f-49a1-bd33-b01e29832426",
+          "name": "Get a policy rule",
+          "request": {
+            "name": "Get a policy rule",
+            "description": {
+              "content": "Returns a single policy rule by ID.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "rules",
+                ":ruleId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "ruleId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "6cca6610-8847-4fb3-8fb9-521f6391e699",
+              "name": "Rule details",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "rules",
+                    ":ruleId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "ruleId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"string\",\n  \"name\": \"string\",\n  \"hostPattern\": \"string\",\n  \"pathPattern\": \"string\",\n  \"method\": \"PATCH\",\n  \"action\": \"block\",\n  \"enabled\": false,\n  \"agentId\": \"string\",\n  \"rateLimit\": 1960,\n  \"rateLimitWindow\": \"minute\",\n  \"scope\": \"organization\",\n  \"metadata\": {},\n  \"conditions\": [\n    {\n      \"target\": \"body\",\n      \"operator\": \"contains\",\n      \"value\": \"string\",\n      \"key\": \"string\"\n    },\n    {\n      \"target\": \"body\",\n      \"operator\": \"contains\",\n      \"value\": \"string\",\n      \"key\": \"string\"\n    }\n  ],\n  \"createdAt\": \"1979-10-10T01:31:37.271Z\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "a1beff73-2d3f-48d5-906e-5d39808bfa10",
+              "name": "Rule not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "rules",
+                    ":ruleId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "ruleId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "6101c775-9e76-4757-8be7-f9508023cac8",
+          "name": "Update a policy rule",
+          "request": {
+            "name": "Update a policy rule",
+            "description": {
+              "content": "Updates one or more fields on a rule. At least one field must be provided.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "rules",
+                ":ruleId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "ruleId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"<string>\",\n  \"hostPattern\": \"<string>\",\n  \"pathPattern\": \"<string>\",\n  \"method\": \"<string>\",\n  \"action\": \"<string>\",\n  \"enabled\": \"<boolean>\",\n  \"agentId\": \"<string>\",\n  \"rateLimit\": \"<integer>\",\n  \"rateLimitWindow\": \"<string>\",\n  \"conditions\": [\n    {\n      \"target\": \"<string>\",\n      \"operator\": \"<string>\",\n      \"value\": \"<string>\",\n      \"key\": \"<string>\"\n    },\n    {\n      \"target\": \"<string>\",\n      \"operator\": \"<string>\",\n      \"value\": \"<string>\",\n      \"key\": \"<string>\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "93eb722a-c618-4688-8c9e-0b34dc8af946",
+              "name": "Rule updated",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "rules",
+                    ":ruleId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "ruleId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"<string>\",\n  \"hostPattern\": \"<string>\",\n  \"pathPattern\": \"<string>\",\n  \"method\": \"<string>\",\n  \"action\": \"<string>\",\n  \"enabled\": \"<boolean>\",\n  \"agentId\": \"<string>\",\n  \"rateLimit\": \"<integer>\",\n  \"rateLimitWindow\": \"<string>\",\n  \"conditions\": [\n    {\n      \"target\": \"body\",\n      \"operator\": \"contains\",\n      \"value\": \"string\",\n      \"key\": \"string\"\n    },\n    {\n      \"target\": \"body\",\n      \"operator\": \"contains\",\n      \"value\": \"string\",\n      \"key\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "d71df902-9324-4247-833d-7b50a21524e1",
+              "name": "Validation error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "rules",
+                    ":ruleId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "ruleId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"<string>\",\n  \"hostPattern\": \"<string>\",\n  \"pathPattern\": \"<string>\",\n  \"method\": \"<string>\",\n  \"action\": \"<string>\",\n  \"enabled\": \"<boolean>\",\n  \"agentId\": \"<string>\",\n  \"rateLimit\": \"<integer>\",\n  \"rateLimitWindow\": \"<string>\",\n  \"conditions\": [\n    {\n      \"target\": \"body\",\n      \"operator\": \"contains\",\n      \"value\": \"string\",\n      \"key\": \"string\"\n    },\n    {\n      \"target\": \"body\",\n      \"operator\": \"contains\",\n      \"value\": \"string\",\n      \"key\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "31429fce-6d43-4bf9-b7ff-c44655093f5e",
+              "name": "Rule not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "rules",
+                    ":ruleId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "ruleId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"<string>\",\n  \"hostPattern\": \"<string>\",\n  \"pathPattern\": \"<string>\",\n  \"method\": \"<string>\",\n  \"action\": \"<string>\",\n  \"enabled\": \"<boolean>\",\n  \"agentId\": \"<string>\",\n  \"rateLimit\": \"<integer>\",\n  \"rateLimitWindow\": \"<string>\",\n  \"conditions\": [\n    {\n      \"target\": \"body\",\n      \"operator\": \"contains\",\n      \"value\": \"string\",\n      \"key\": \"string\"\n    },\n    {\n      \"target\": \"body\",\n      \"operator\": \"contains\",\n      \"value\": \"string\",\n      \"key\": \"string\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "3664e4ce-8e16-4f9e-ae7d-7d7f57a56fab",
+          "name": "Delete a policy rule",
+          "request": {
+            "name": "Delete a policy rule",
+            "description": {},
+            "url": {
+              "path": [
+                "rules",
+                ":ruleId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "ruleId",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "DELETE",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "06d761c3-cb58-4a90-8c0b-08adde1aa6f7",
+              "name": "Rule deleted",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "rules",
+                    ":ruleId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "ruleId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "No Content",
+              "code": 204,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "566f450f-5e27-4c10-b4c2-960507433052",
+              "name": "Rule not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "rules",
+                    ":ruleId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "ruleId",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "64acecdd-bf37-48e8-9ec1-a4b21b73200d",
+          "name": "Get app permissions (project)",
+          "request": {
+            "name": "Get app permissions (project)",
+            "description": {
+              "content": "Returns the layered tool-level permission states for a provider at the project scope: `defaults` holds the all-agents states, `byAgent` holds per-agent override layers. Tool IDs come from the app's permission definition (`GET /apps/{provider}/permission-definition`).\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "rules",
+                "permissions",
+                ":provider"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "provider",
+                  "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "9e350791-dd73-440b-bd2c-be8d3e6848b3",
+              "name": "Layered permission states",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "rules",
+                    "permissions",
+                    ":provider"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"defaults\": {\n    \"key_0\": {\n      \"permission\": \"manual_approval\"\n    },\n    \"key_1\": {\n      \"permission\": \"block\"\n    },\n    \"key_2\": {\n      \"permission\": \"block\"\n    },\n    \"key_3\": {\n      \"permission\": \"allow\"\n    }\n  },\n  \"byAgent\": {\n    \"key_0\": {\n      \"key_0\": {\n        \"permission\": \"allow\"\n      }\n    },\n    \"key_1\": {\n      \"key_0\": {\n        \"permission\": \"block\"\n      },\n      \"key_1\": {\n        \"permission\": \"allow\"\n      }\n    },\n    \"key_2\": {\n      \"key_0\": {\n        \"permission\": \"block\"\n      }\n    }\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "438cfe17-336a-4167-9f6c-80b8f52a1a7f",
+          "name": "Set app permissions (project)",
+          "request": {
+            "name": "Set app permissions (project)",
+            "description": {
+              "content": "Updates tool-level permissions for a provider at the project scope.\n\nOmit `agentId` to write the all-agents defaults. Pass `agentId` to write one agent's override layer; there, the `inherit` permission removes the agent's override for a tool so it falls back to the all-agents setting.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "rules",
+                "permissions",
+                ":provider"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "provider",
+                  "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PUT",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"changes\": [\n    {\n      \"toolId\": \"<string>\",\n      \"permission\": \"<string>\"\n    }\n  ],\n  \"conditions\": [\n    {\n      \"target\": \"<string>\",\n      \"operator\": \"<string>\",\n      \"value\": \"<string>\",\n      \"key\": \"<string>\"\n    },\n    {\n      \"target\": \"<string>\",\n      \"operator\": \"<string>\",\n      \"value\": \"<string>\",\n      \"key\": \"<string>\"\n    }\n  ],\n  \"agentId\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "e92f7038-a769-478c-8c87-5c7ff391211a",
+              "name": "Permissions updated",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "rules",
+                    "permissions",
+                    ":provider"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PUT",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"changes\": [\n    {\n      \"toolId\": \"string\",\n      \"permission\": \"block\"\n    }\n  ],\n  \"conditions\": [\n    {\n      \"target\": \"body\",\n      \"operator\": \"contains\",\n      \"value\": \"string\",\n      \"key\": \"string\"\n    },\n    {\n      \"target\": \"body\",\n      \"operator\": \"contains\",\n      \"value\": \"string\",\n      \"key\": \"string\"\n    }\n  ],\n  \"agentId\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "b3740b19-823d-44f7-ac9c-1213cd16de61",
+              "name": "Validation error, unknown provider, or unknown tool",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "rules",
+                    "permissions",
+                    ":provider"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PUT",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"changes\": [\n    {\n      \"toolId\": \"string\",\n      \"permission\": \"block\"\n    }\n  ],\n  \"conditions\": [\n    {\n      \"target\": \"body\",\n      \"operator\": \"contains\",\n      \"value\": \"string\",\n      \"key\": \"string\"\n    },\n    {\n      \"target\": \"body\",\n      \"operator\": \"contains\",\n      \"value\": \"string\",\n      \"key\": \"string\"\n    }\n  ],\n  \"agentId\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "2d2aa690-dcf7-4d07-9435-e8bc1d644cc6",
+              "name": "Agent not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "rules",
+                    "permissions",
+                    ":provider"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PUT",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"changes\": [\n    {\n      \"toolId\": \"string\",\n      \"permission\": \"block\"\n    }\n  ],\n  \"conditions\": [\n    {\n      \"target\": \"body\",\n      \"operator\": \"contains\",\n      \"value\": \"string\",\n      \"key\": \"string\"\n    },\n    {\n      \"target\": \"body\",\n      \"operator\": \"contains\",\n      \"value\": \"string\",\n      \"key\": \"string\"\n    }\n  ],\n  \"agentId\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "5dd7afaf-47a0-4036-9399-e76700ebc7bd",
+          "name": "Count overlapping custom rules (project)",
+          "request": {
+            "name": "Count overlapping custom rules (project)",
+            "description": {
+              "content": "Counts custom project rules whose host patterns overlap the app's hosts — rules that may interfere with the app's permission settings.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "rules",
+                "overlap",
+                ":provider"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "provider",
+                  "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "40f6ed19-b602-4ac8-80e0-dda104107212",
+              "name": "Overlap count",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "rules",
+                    "overlap",
+                    ":provider"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "provider",
+                      "description": "(Required) App provider identifier (e.g., `gmail`, `github`, `jira`)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"count\": 8839\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.onecli.sh/v1",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{bearerToken}}"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "117f0a0d-8842-4fbb-a1ba-5079c9b4183f",
+    "name": "OneCLI Agent Setup Rules API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.\n\n**Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)\n\n## Authentication\n\nAll endpoints require authentication via one of:\n\n- **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.\n- **Session** — Cookie-based session from the web dashboard.\n\nFor organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.\n",
+      "type": "text/plain"
+    }
+  }
+}

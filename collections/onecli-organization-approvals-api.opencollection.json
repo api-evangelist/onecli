@@ -1,0 +1,43 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OneCLI Agent Setup Organization Approvals API",
+    "version": "1.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Organization Approvals",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List pending approvals across the organization",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/org/approvals/pending",
+            "params": [
+              {
+                "name": "exclude",
+                "value": "",
+                "type": "query",
+                "description": "Comma-separated approval IDs to skip (already being handled) so the poll can hold open for genuinely new requests."
+              }
+            ]
+          },
+          "docs": "Long-polls for manual-approval requests awaiting a decision across **every** project in the organization. Returns immediately when any are pending, otherwise holds the connection open (up to `timeoutSeconds`) until one arrives or the poll times out.\n\nEach request carries its own `projectId`; submit the decision to the existing `POST /approvals/{id}/decision` route with that project's `X-Project-Id`. Authenticate with an organization API key (`oc_org_...`) — the poll itself sends no `X-Project-Id"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

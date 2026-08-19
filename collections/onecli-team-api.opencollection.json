@@ -1,0 +1,39 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OneCLI Agent Setup Team API",
+    "version": "1.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Team",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Provision a team member",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.onecli.sh/v1/team/provisions",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Pre-creates a user account with its own project, a usable API key, a default\nagent, and a claim link. The API key works immediately, so agents can make\nrequests before the user signs up. The user later opens the claim link to bind\nthe account to their identity. Unclaimed provisions expire after 7 days and are\ncleaned up automatically.\n\nRequires an admin or owner role. Cloud only.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

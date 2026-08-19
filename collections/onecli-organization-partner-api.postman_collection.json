@@ -1,0 +1,377 @@
+{
+  "item": [
+    {
+      "id": "67d9b76c-9f65-4447-ba91-f7bc4d293205",
+      "name": "Organization Partner",
+      "description": {
+        "content": "Inspect and detach an organization's partner relationship. Cloud only.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "873d3860-2c16-401b-a82a-f50ba0dc8e99",
+          "name": "List inherited partner secrets",
+          "request": {
+            "name": "List inherited partner secrets",
+            "description": {
+              "content": "Returns the partner-level secrets this organization inherits (read-only). Empty if the organization has no partner or has detached. Authenticate with your organization API key or session.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "org",
+                "partner",
+                "inherited-secrets"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "4fd54528-4db2-44f4-a65d-7be712bfe9f0",
+              "name": "List of inherited secrets",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "org",
+                    "partner",
+                    "inherited-secrets"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": \"string\",\n    \"name\": \"string\",\n    \"type\": \"generic\",\n    \"valueSource\": \"onepassword\",\n    \"opRef\": \"string\",\n    \"hostPattern\": \"string\",\n    \"pathPattern\": \"string\",\n    \"injectionConfig\": {\n      \"headerName\": \"string\",\n      \"valueFormat\": \"string\"\n    },\n    \"metadata\": {},\n    \"scope\": \"organization\",\n    \"typeLabel\": \"string\",\n    \"createdAt\": \"1989-11-16T10:14:31.616Z\"\n  },\n  {\n    \"id\": \"string\",\n    \"name\": \"string\",\n    \"type\": \"openai\",\n    \"valueSource\": \"onepassword\",\n    \"opRef\": \"string\",\n    \"hostPattern\": \"string\",\n    \"pathPattern\": \"string\",\n    \"injectionConfig\": {\n      \"headerName\": \"string\",\n      \"valueFormat\": \"string\"\n    },\n    \"metadata\": {},\n    \"scope\": \"project\",\n    \"typeLabel\": \"string\",\n    \"createdAt\": \"2014-09-20T15:27:54.361Z\"\n  }\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "af7e8926-1b0b-4ad7-b868-7b2e1706c9f0",
+          "name": "Get partner status",
+          "request": {
+            "name": "Get partner status",
+            "description": {
+              "content": "Returns whether this organization is managed by a partner and whether it has detached. Requires the admin or owner role.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "org",
+                "partner",
+                "status"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "78c12683-d081-4a4f-86f2-a25a8427389e",
+              "name": "Partner link status",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "org",
+                    "partner",
+                    "status"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"partnerManaged\": false,\n  \"detached\": true\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "1e607b13-aa91-4cd9-a282-1777da796ddf",
+          "name": "Detach from partner",
+          "request": {
+            "name": "Detach from partner",
+            "description": {
+              "content": "Stops this organization from inheriting partner secrets while keeping its partner attribution. Requires the admin or owner role.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "org",
+                "partner",
+                "detach"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "61dd96ae-7ade-4a18-92e7-7b382a92706d",
+              "name": "Detached",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "org",
+                    "partner",
+                    "detach"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "c6a41bb5-efe4-4a1a-ac99-dc340de4c81c",
+              "name": "Organization is not managed by a partner",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "org",
+                    "partner",
+                    "detach"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "25508362-9d44-4954-89af-4251e6998f57",
+              "name": "Insufficient permissions (requires admin role)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "org",
+                    "partner",
+                    "detach"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.onecli.sh/v1",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{bearerToken}}"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "c0d56949-a80a-46bc-9cbb-a0a9a5298420",
+    "name": "OneCLI Agent Setup Organization Partner API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.\n\n**Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)\n\n## Authentication\n\nAll endpoints require authentication via one of:\n\n- **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.\n- **Session** — Cookie-based session from the web dashboard.\n\nFor organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.\n",
+      "type": "text/plain"
+    }
+  }
+}

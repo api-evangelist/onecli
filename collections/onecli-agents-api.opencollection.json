@@ -1,0 +1,250 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OneCLI Agent Setup Agents API",
+    "version": "1.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Agents",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List agents",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/agents"
+          },
+          "docs": "Returns all agents in the current project with secret and connection counts."
+        },
+        {
+          "info": {
+            "name": "Create an agent",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.onecli.sh/v1/agents",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Creates a new agent in the current project. The identifier must be lowercase alphanumeric with hyphens, starting with a letter or number (max 50 chars).\n\nThe response does not include the agent's access token — read it from `GET /agents` or regenerate it with `POST /agents/{agentId}/regenerate-token`.\n"
+        },
+        {
+          "info": {
+            "name": "Get default agent",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/agents/default"
+          },
+          "docs": "Returns the default agent for the current project."
+        },
+        {
+          "info": {
+            "name": "Rename an agent",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "https://api.onecli.sh/v1/agents/:agentId",
+            "params": [
+              {
+                "name": "agentId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Rename an agent"
+        },
+        {
+          "info": {
+            "name": "Delete an agent",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "https://api.onecli.sh/v1/agents/:agentId",
+            "params": [
+              {
+                "name": "agentId",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Delete an agent"
+        },
+        {
+          "info": {
+            "name": "Set default agent",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.onecli.sh/v1/agents/:agentId/set-default",
+            "params": [
+              {
+                "name": "agentId",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Marks the specified agent as the project's default agent."
+        },
+        {
+          "info": {
+            "name": "Regenerate agent token",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.onecli.sh/v1/agents/:agentId/regenerate-token",
+            "params": [
+              {
+                "name": "agentId",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Generates a new access token for the agent. The previous token is immediately invalidated."
+        },
+        {
+          "info": {
+            "name": "Update agent secret mode",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "https://api.onecli.sh/v1/agents/:agentId/secret-mode",
+            "params": [
+              {
+                "name": "agentId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Controls which secrets the agent can access:\n- `all` — the agent can use every secret in the project.\n- `selective` — only secrets explicitly assigned via `PUT /agents/{agentId}/secrets`.\n"
+        },
+        {
+          "info": {
+            "name": "List agent's assigned secrets",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/agents/:agentId/secrets",
+            "params": [
+              {
+                "name": "agentId",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Returns the IDs of secrets assigned to this agent (relevant when secret mode is `selective`)."
+        },
+        {
+          "info": {
+            "name": "Update agent's assigned secrets",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "https://api.onecli.sh/v1/agents/:agentId/secrets",
+            "params": [
+              {
+                "name": "agentId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Replaces the full list of secrets assigned to this agent."
+        },
+        {
+          "info": {
+            "name": "List granular-access policies",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/agents/granular-access"
+          },
+          "docs": "Read-only overview of every agent → connection assignment in the project that carries a non-empty granular-access policy (e.g. GitHub repository or Dropbox folder scoping). Unrestricted assignments are omitted.\n"
+        },
+        {
+          "info": {
+            "name": "List agent's app-connection assignments",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/agents/:agentId/connections",
+            "params": [
+              {
+                "name": "agentId",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Returns the agent's app-connection assignments and their per-connection granular-access policies."
+        },
+        {
+          "info": {
+            "name": "Update agent's app-connection assignments",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "https://api.onecli.sh/v1/agents/:agentId/connections",
+            "params": [
+              {
+                "name": "agentId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Replaces the agent's app-connection assignments and their granular-access policies."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

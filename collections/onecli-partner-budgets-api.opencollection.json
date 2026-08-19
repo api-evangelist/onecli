@@ -1,0 +1,92 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OneCLI Agent Setup Partner Budgets API",
+    "version": "1.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Partner Budgets",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List spend budgets for an organization",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.onecli.sh/v1/partner/orgs/:orgId/budgets",
+            "params": [
+              {
+                "name": "orgId",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Returns the spend budgets set on your LLM keys for one organization, each with its current-period spend. Requires a Partner API key (`oc_partner_…`)."
+        },
+        {
+          "info": {
+            "name": "Set or update a spend budget",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.onecli.sh/v1/partner/orgs/:orgId/secrets/:secretId/budget",
+            "params": [
+              {
+                "name": "orgId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "secretId",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Caps how much an organization can spend on one of your LLM keys. When the organization's spend reaches the limit, the gateway stops using that key for the organization until the budget is raised or reset. Creates the budget, or replaces the existing one.\n\nOnly partner owners and admins can set budgets, and budgets are supported on metered LLM keys (Anthropic today).\n"
+        },
+        {
+          "info": {
+            "name": "Remove a spend budget",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "https://api.onecli.sh/v1/partner/orgs/:orgId/secrets/:secretId/budget",
+            "params": [
+              {
+                "name": "orgId",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "secretId",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Removes the spend budget for an organization on one of your LLM keys. The key resumes with no cap for that organization. Only partner owners and admins can do this."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

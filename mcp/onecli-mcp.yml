@@ -359,3 +359,9 @@ tools:
 - name: detachFromPartner
   description: Detach from partner
   source_operation: openapi/onecli-openapi-original.yml#detachFromPartner
+deployment:
+  mode: none
+  verified: derived
+  tools: 116
+  checked: '2026-08-12'
+  source: catalog MCP census
