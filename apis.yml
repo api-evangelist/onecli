@@ -43,6 +43,18 @@ tags:
 - Secrets Management
 - Credentials
 - Gateway
+- Authentication
+- Developer Tools
+- MCP
+- Vault
+tags_raw:
+- Company
+- Security
+- Identity
+- AI Agents
+- Secrets Management
+- Credentials
+- Gateway
 - OAuth
 - Developer Tools
 - MCP
@@ -100,6 +112,8 @@ apis:
   humanURL: https://onecli.sh/docs/api-reference
   baseURL: https://api.onecli.sh/v1
   tags:
+  - Application
+  tags_raw:
   - Apps
   properties:
   - type: OpenAPI
@@ -323,6 +337,8 @@ apis:
   humanURL: https://onecli.sh/docs/api-reference
   baseURL: https://api.onecli.sh/v1
   tags:
+  - Project
+  tags_raw:
   - Projects
   properties:
   - type: OpenAPI
