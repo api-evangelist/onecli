@@ -435,6 +435,9 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: CapabilityMap
+  url: capabilities/onecli-capability-edges.yml
+  name: Onecli Business Capability Map
 - type: Overlay
   url: overlays/onecli-openapi-overlay.yaml
 - type: DomainSecurity

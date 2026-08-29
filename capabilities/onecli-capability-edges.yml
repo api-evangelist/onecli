@@ -1,0 +1,69 @@
+slug: onecli
+provider: Onecli
+generated_by: planning/capability-mapping/scripts/classify_capabilities.py
+model: claude-opus-5
+frame:
+- Education
+min_confidence: 0.7
+capability_model:
+  source: https://github.com/vincentmakes/turbo-ea-capabilities
+  license: CC-BY-4.0
+  attribution: Turbo EA Capabilities by Vincent Verdet — Turbo EA, https://github.com/vincentmakes/turbo-ea-capabilities,
+    CC BY 4.0
+  notice: NOTICE
+edge_count: 5
+edges:
+- tag: Organization Rules
+  spec_file: onecli-organization-rules-api-openapi.yml
+  capability_id: BC-620.20
+  capability_id_l1: BC-620
+  capability_name: Identity & Access Management
+  confidence: 0.8
+  evidence: POST /org/rules createOrgRule "Create an organization rule"; PUT /org/rules/permissions/{provider}
+    "Set app permissions"; schemas PolicyRule, PermissionState, AppPermissionStates
+  reason: CRUD over policy rules and per-app permission states that govern which agents may access which
+    provider scopes — access-control policy administration, i.e. Identity & Access Management.
+- tag: Rules
+  spec_file: onecli-rules-api-openapi.yml
+  capability_id: BC-620.20
+  capability_id_l1: BC-620
+  capability_name: Identity & Access Management
+  confidence: 0.8
+  evidence: GET /rules listRules "List policy rules"; PUT /rules/permissions/{provider} "Set app permissions
+    (project)"; schemas PolicyRule, RuleCondition, PermissionState
+  reason: Project-scoped policy rules and app permission states controlling agent access to provider APIs
+    — access-control policy administration, i.e. Identity & Access Management.
+- tag: Agents
+  spec_file: onecli-agents-api-openapi.yml
+  capability_id: BC-620.20
+  capability_id_l1: BC-620
+  capability_name: Identity & Access Management
+  confidence: 0.75
+  evidence: POST /agents/{agentId}/regenerate-token  Regenerate agent token; PUT /agents/{agentId}/secrets  Update
+    agent's assigned secrets; GET /agents/granular-access  List granular-access policies
+  reason: Lifecycle of non-human identities with token regeneration, secret assignment and granular-access
+    policies — machine identity and access management.
+- tag: Secrets
+  spec_file: onecli-secrets-api-openapi.yml
+  capability_id: BC-620.20
+  capability_id_l1: BC-620
+  capability_name: Identity & Access Management
+  confidence: 0.72
+  evidence: '"POST /secrets createSecret Create a secret"; schemas "Secret, SecretCreated, InjectionConfig";
+    vendor "injects real API keys and OAuth tokens at request time"'
+  reason: CRUD over stored credentials/secrets that the gateway injects into agent requests — credential
+    vaulting and privileged-access control, i.e. Identity & Access Management (IAM/PAM). Not a business-domain
+    object; the alternative reading (runtime config/secrets for one's own services) is close, but this
+    vendor's product is explicitly an access-control gateway, hence moderate rather than high confidence.
+- tag: Organization Connections
+  spec_file: onecli-organization-connections-api-openapi.yml
+  capability_id: BC-620.20
+  capability_id_l1: BC-620
+  capability_name: Identity & Access Management
+  confidence: 0.7
+  evidence: GET /org/connections listOrgConnections "List organization connections"; DELETE "Disconnect
+    an organization connection"; schema AppConnection — connections carry OAuth tokens/API keys to third-party
+    apps
+  reason: Managing the organisation's federated app connections (OAuth/token grants to Gmail, GitHub,
+    etc.) is identity and access management plumbing for a credential gateway, not a business-domain capability.
+    Mapped to IAM under Cybersecurity.
