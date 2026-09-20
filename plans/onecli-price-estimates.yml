@@ -9,7 +9,9 @@ note: ESTIMATES, not quotes. Computed by API Evangelist from the prices this pro
 audience_of_source_pricing: business-product
 pricing_basis: tiered-subscription
 delivery: managed+licensed
-delivery_method: keyword
+delivery_method: page
+delivery_evidence: 'Self-hosted deployment is available on the Enterprise plan: the full platform runs
+  in your own cloud, VPC, or on-prem, with custom terms.'
 estimate_count: 1
 estimates:
 - kind: entry_cost
