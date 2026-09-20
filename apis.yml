@@ -436,6 +436,10 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: Pricing
+  url: https://onecli.sh/pricing
+- type: Plans
+  url: plans/onecli-plans-pricing.yml
 - type: Website
   url: https://www.onecli.sh/
 - type: CapabilityMap

@@ -1,0 +1,48 @@
+# Pricing transcribed from the provider's own page — see provenance. Numbers are quoted, not derived.
+generated: '2026-09-20'
+method: searched
+source: https://onecli.sh/pricing
+sources:
+- https://onecli.sh/pricing
+provenance:
+  tool: planning/api-economics/harvest_pricing.py
+  run: 20260920T124425
+  grounding: every price_text was found verbatim in the fetched page text
+audience: business-product
+pricing_basis: tiered-subscription
+published: true
+note: 'Monthly/Yearly toggle (2 months off) shown; yearly prices not displayed in text. FAQ notes hosted-model
+  pricing: Team $499 and Scale $1,999 without BYOC.'
+plan_count: 4
+currency: USD
+plans:
+- name: Free
+  price_text: $0
+  price: 0
+  currency: USD
+  period: month
+  included_quota: $5 AI credits · 500 calls/mo free; 3 human seats, 3 agents, 7 days audit log retention
+- name: Team
+  price_text: $149 /mo
+  price: 149
+  currency: USD
+  period: month
+  included_quota: 5 users · 10 agents; BYOC Anthropic / OpenAI key; unlimited integration calls; 30 days
+    audit log retention
+- name: Scale
+  price_text: $499 /mo
+  price: 499
+  currency: USD
+  period: month
+  included_quota: 10 users · 20 agents; BYOC key; unlimited integration calls; 90 days audit log retention
+  overage: Extra seat $49 /user/mo (or $199 with hosted models included)
+- name: Enterprise
+  price_text: Custom
+  period: none
+  included_quota: Unlimited human seats, custom agents, self-hosted deployment, custom terms
+  overage: Custom pricing
+rate_limit_statements:
+- Fair usage limits apply per session and per week, measured by the tokens your prompts and responses
+  consume.
+- when a window is exhausted, requests route to a lightweight model until it resets
+- 'no metering on integration calls: no quotas, no overage bills'
