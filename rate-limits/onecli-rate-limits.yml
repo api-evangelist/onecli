@@ -1,0 +1,15 @@
+# Rate limits transcribed from the provider's own documentation — see provenance. Quoted, not derived.
+generated: '2026-09-20'
+method: searched
+source: https://onecli.sh/docs/api-reference
+sources:
+- https://onecli.sh/docs/api-reference
+provenance:
+  tool: planning/api-economics/harvest_ratelimits.py
+  run: 20260920T133210
+  grounding: every limit_text was found verbatim in the fetched page text
+published: false
+note: The page mentions rate limits only qualitatively ('The gateway enforces rate limits on proxied requests
+  via policy rules') with no numeric values or rate-limit headers; no 429 status listed.
+limit_count: 0
+limits: []
