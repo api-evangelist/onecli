@@ -1,0 +1,27 @@
+# Front Door AI Index — onecli — 2026-09-17
+# AI vocabulary counted on the provider's root page. Generated; do not edit.
+# `score` is null unless ownership is `own` — see front_door_ai.py.
+front_door_ai:
+  slug: onecli
+  lexicon_version: '1.0'
+  probed_at: '2026-09-17'
+  host: www.onecli.sh
+  final_host: onecli.sh
+  ownership: own
+  owner: onecli
+  shares_host_with: null
+  inherited_from: null
+  verdict: scored
+  score: 7
+  host_score: 7
+  density: 15.8
+  words: 443
+  tiers:
+    agentic: 0
+    core: 6
+    model: 1
+  ambiguous: 14
+  top_terms:
+    agent: 14
+    AI: 6
+    Claude: 1

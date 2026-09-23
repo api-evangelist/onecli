@@ -1,27 +1,8 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: OneCLI Agent Setup Organization App Config API
+  title: OneCLI Organization App Config API
   version: '1.0'
-  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
-
-
-    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
-
-
-    ## Authentication
-
-
-    All endpoints require authentication via one of:
-
-
-    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
-
-    - **Session** — Cookie-based session from the web dashboard.
-
-
-    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
-
-    '
+  description: The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
 servers:
 - url: https://api.onecli.sh/v1
   description: OneCLI Cloud
@@ -40,9 +21,7 @@ paths:
       description: 'Starts an OAuth flow that creates the connection at the organization level, shared by every project in the organization. Redirects to the app''s OAuth authorization page; the flow completes on the shared `/apps/{provider}/callback` endpoint, so no extra redirect URI registration is needed.
 
 
-        Typically opened in a browser. With an organization API key the target organization is derived from the key. Available on OneCLI Cloud and self-hosted Enterprise. Requires the admin or owner role.
-
-        '
+        Typically opened in a browser. With an organization API key the target organization is derived from the key. Available on OneCLI Cloud and self-hosted Enterprise. Requires the admin or owner role.'
       tags:
       - Organization App Config
       parameters:
@@ -172,9 +151,7 @@ paths:
     post:
       operationId: upsertOrgAppConfig
       summary: Set organization app configuration
-      description: 'Creates or updates the BYOC configuration for an app at the organization level. The accepted field names are defined per app (e.g. `clientId`/`clientSecret` for OAuth apps); unknown keys are stripped. Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise.
-
-        '
+      description: Creates or updates the BYOC configuration for an app at the organization level. The accepted field names are defined per app (e.g. `clientId`/`clientSecret` for OAuth apps); unknown keys are stripped. Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise.
       tags:
       - Organization App Config
       parameters:
@@ -305,9 +282,7 @@ paths:
     post:
       operationId: addOrgBlocklistEntry
       summary: Activate or add an organization blocklist entry
-      description: 'Provide either `{ hostId }` to activate a predefined blocklist host, or `{ name, hostPattern }` to add a custom rule — at the organization level. Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise.
-
-        '
+      description: Provide either `{ hostId }` to activate a predefined blocklist host, or `{ name, hostPattern }` to add a custom rule — at the organization level. Requires admin role. Available on OneCLI Cloud and self-hosted Enterprise.
       tags:
       - Organization App Config
       parameters:
@@ -392,22 +367,27 @@ paths:
         '204':
           description: Rule removed
 components:
-  parameters:
-    blocklistRuleId:
-      name: ruleId
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Blocklist rule ID (from the blocklist state's `ruleId` field)
-    provider:
-      name: provider
-      in: path
-      required: true
-      schema:
-        type: string
-      description: App provider identifier (e.g., `gmail`, `github`, `jira`)
   schemas:
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
     BlocklistHostState:
       type: object
       description: State of one blocklist entry — a predefined host or a custom rule.
@@ -449,26 +429,21 @@ components:
       oneOf:
       - $ref: '#/components/schemas/ErrorFlat'
       - $ref: '#/components/schemas/ErrorEnvelope'
-    ErrorFlat:
-      type: object
-      description: Flat error shape used by route-level validation.
-      properties:
-        error:
-          type: string
-      required:
-      - error
-    ErrorEnvelope:
-      type: object
-      description: Envelope error shape used for authentication failures and service errors.
-      properties:
-        error:
-          type: object
-          properties:
-            message:
-              type: string
-            type:
-              type: string
-              description: Error category (e.g. `authentication_error`).
+  parameters:
+    blocklistRuleId:
+      name: ruleId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Blocklist rule ID (from the blocklist state's `ruleId` field)
+    provider:
+      name: provider
+      in: path
+      required: true
+      schema:
+        type: string
+      description: App provider identifier (e.g., `gmail`, `github`, `jira`)
   securitySchemes:
     bearerAuth:
       type: http

@@ -1,27 +1,8 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: OneCLI Agent Setup Rules API
+  title: OneCLI Rules API
   version: '1.0'
-  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
-
-
-    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
-
-
-    ## Authentication
-
-
-    All endpoints require authentication via one of:
-
-
-    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
-
-    - **Session** — Cookie-based session from the web dashboard.
-
-
-    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
-
-    '
+  description: The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
 servers:
 - url: https://api.onecli.sh/v1
   description: OneCLI Cloud
@@ -61,9 +42,7 @@ paths:
 
         - **manual_approval** — hold matching requests for human approval before forwarding.
 
-        - **allow** — explicitly allow matching requests (used to carve exceptions in deny mode or shadow a broader rule).
-
-        '
+        - **allow** — explicitly allow matching requests (used to carve exceptions in deny mode or shadow a broader rule).'
       tags:
       - Rules
       requestBody:
@@ -271,9 +250,7 @@ paths:
     get:
       operationId: getRulePermissions
       summary: Get app permissions (project)
-      description: 'Returns the layered tool-level permission states for a provider at the project scope: `defaults` holds the all-agents states, `byAgent` holds per-agent override layers. Tool IDs come from the app''s permission definition (`GET /apps/{provider}/permission-definition`).
-
-        '
+      description: 'Returns the layered tool-level permission states for a provider at the project scope: `defaults` holds the all-agents states, `byAgent` holds per-agent override layers. Tool IDs come from the app''s permission definition (`GET /apps/{provider}/permission-definition`).'
       tags:
       - Rules
       parameters:
@@ -291,9 +268,7 @@ paths:
       description: 'Updates tool-level permissions for a provider at the project scope.
 
 
-        Omit `agentId` to write the all-agents defaults. Pass `agentId` to write one agent''s override layer; there, the `inherit` permission removes the agent''s override for a tool so it falls back to the all-agents setting.
-
-        '
+        Omit `agentId` to write the all-agents defaults. Pass `agentId` to write one agent''s override layer; there, the `inherit` permission removes the agent''s override for a tool so it falls back to the all-agents setting.'
       tags:
       - Rules
       parameters:
@@ -361,6 +336,59 @@ paths:
                     type: integer
 components:
   schemas:
+    ProjectPermissionChange:
+      type: object
+      required:
+      - toolId
+      - permission
+      properties:
+        toolId:
+          type: string
+          minLength: 1
+        permission:
+          type: string
+          enum:
+          - allow
+          - manual_approval
+          - block
+          - inherit
+          description: '`inherit` is only valid together with `agentId`: it removes the agent''s override so the tool falls back to the all-agents setting.'
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
+    AppPermissionStates:
+      type: object
+      description: Layered app-permission states for a provider.
+      properties:
+        defaults:
+          type: object
+          description: Tool states from the all-agents layer (tool ID → state).
+          additionalProperties:
+            $ref: '#/components/schemas/PermissionState'
+        byAgent:
+          type: object
+          description: Per-agent override layers (agent ID → tool ID → state). Always empty at the organization scope, where rules are agent-less.
+          additionalProperties:
+            type: object
+            additionalProperties:
+              $ref: '#/components/schemas/PermissionState'
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
     PermissionState:
       type: object
       properties:
@@ -389,23 +417,33 @@ components:
       oneOf:
       - $ref: '#/components/schemas/ErrorFlat'
       - $ref: '#/components/schemas/ErrorEnvelope'
-    ProjectPermissionChange:
+    RuleCondition:
       type: object
+      description: A condition that must match for the rule to apply. Conditions inspect the request body to enable fine-grained filtering beyond host/path/method.
       required:
-      - toolId
-      - permission
+      - target
+      - operator
+      - value
       properties:
-        toolId:
-          type: string
-          minLength: 1
-        permission:
+        target:
           type: string
           enum:
-          - allow
-          - manual_approval
-          - block
-          - inherit
-          description: '`inherit` is only valid together with `agentId`: it removes the agent''s override so the tool falls back to the all-agents setting.'
+          - body
+          description: What part of the request to inspect.
+        operator:
+          type: string
+          enum:
+          - contains
+          description: How to match the value against the target.
+        value:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          description: The string to match against.
+        key:
+          type: string
+          maxLength: 500
+          description: Optional JSON key path within the body to scope the match.
     PolicyRule:
       type: object
       description: 'A policy rule. Custom (user-authored) rules carry their endpoint fields (`hostPattern`/`pathPattern`/`method`); app-permission rules (`metadata.source: app_permission`) omit them and are identified by `metadata.provider` + `metadata.toolId`.'
@@ -472,69 +510,6 @@ components:
         createdAt:
           type: string
           format: date-time
-    ErrorFlat:
-      type: object
-      description: Flat error shape used by route-level validation.
-      properties:
-        error:
-          type: string
-      required:
-      - error
-    ErrorEnvelope:
-      type: object
-      description: Envelope error shape used for authentication failures and service errors.
-      properties:
-        error:
-          type: object
-          properties:
-            message:
-              type: string
-            type:
-              type: string
-              description: Error category (e.g. `authentication_error`).
-    AppPermissionStates:
-      type: object
-      description: Layered app-permission states for a provider.
-      properties:
-        defaults:
-          type: object
-          description: Tool states from the all-agents layer (tool ID → state).
-          additionalProperties:
-            $ref: '#/components/schemas/PermissionState'
-        byAgent:
-          type: object
-          description: Per-agent override layers (agent ID → tool ID → state). Always empty at the organization scope, where rules are agent-less.
-          additionalProperties:
-            type: object
-            additionalProperties:
-              $ref: '#/components/schemas/PermissionState'
-    RuleCondition:
-      type: object
-      description: A condition that must match for the rule to apply. Conditions inspect the request body to enable fine-grained filtering beyond host/path/method.
-      required:
-      - target
-      - operator
-      - value
-      properties:
-        target:
-          type: string
-          enum:
-          - body
-          description: What part of the request to inspect.
-        operator:
-          type: string
-          enum:
-          - contains
-          description: How to match the value against the target.
-        value:
-          type: string
-          minLength: 1
-          maxLength: 1000
-          description: The string to match against.
-        key:
-          type: string
-          maxLength: 500
-          description: Optional JSON key path within the body to scope the match.
   parameters:
     ruleId:
       name: ruleId

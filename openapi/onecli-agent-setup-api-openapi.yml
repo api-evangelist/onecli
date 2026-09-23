@@ -1,27 +1,8 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
   title: OneCLI Agent Setup API
   version: '1.0'
-  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
-
-
-    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
-
-
-    ## Authentication
-
-
-    All endpoints require authentication via one of:
-
-
-    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
-
-    - **Session** — Cookie-based session from the web dashboard.
-
-
-    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
-
-    '
+  description: The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
 servers:
 - url: https://api.onecli.sh/v1
   description: OneCLI Cloud
@@ -37,9 +18,7 @@ paths:
     get:
       operationId: getContainerConfig
       summary: Get container configuration
-      description: 'Returns everything an agent orchestrator needs to route a container (or local process) through the OneCLI gateway: proxy environment variables, the gateway CA certificate, and any credential stub files. The server controls all env var names, values, and paths.
-
-        '
+      description: 'Returns everything an agent orchestrator needs to route a container (or local process) through the OneCLI gateway: proxy environment variables, the gateway CA certificate, and any credential stub files. The server controls all env var names, values, and paths.'
       tags:
       - Agent Setup
       parameters:
@@ -194,6 +173,14 @@ components:
       oneOf:
       - $ref: '#/components/schemas/ErrorFlat'
       - $ref: '#/components/schemas/ErrorEnvelope'
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
     ErrorEnvelope:
       type: object
       description: Envelope error shape used for authentication failures and service errors.
@@ -206,14 +193,6 @@ components:
             type:
               type: string
               description: Error category (e.g. `authentication_error`).
-    ErrorFlat:
-      type: object
-      description: Flat error shape used by route-level validation.
-      properties:
-        error:
-          type: string
-      required:
-      - error
   securitySchemes:
     bearerAuth:
       type: http

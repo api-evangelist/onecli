@@ -1,27 +1,8 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: OneCLI Agent Setup Utility API
+  title: OneCLI Utility API
   version: '1.0'
-  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
-
-
-    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
-
-
-    ## Authentication
-
-
-    All endpoints require authentication via one of:
-
-
-    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
-
-    - **Session** — Cookie-based session from the web dashboard.
-
-
-    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
-
-    '
+  description: The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
 servers:
 - url: https://api.onecli.sh/v1
   description: OneCLI Cloud

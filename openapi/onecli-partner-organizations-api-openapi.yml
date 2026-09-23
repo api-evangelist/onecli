@@ -1,27 +1,8 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: OneCLI Agent Setup Partner Organizations API
+  title: OneCLI Partner Organizations API
   version: '1.0'
-  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
-
-
-    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
-
-
-    ## Authentication
-
-
-    All endpoints require authentication via one of:
-
-
-    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
-
-    - **Session** — Cookie-based session from the web dashboard.
-
-
-    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
-
-    '
+  description: The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
 servers:
 - url: https://api.onecli.sh/v1
   description: OneCLI Cloud
@@ -55,9 +36,7 @@ paths:
       description: 'Creates an organization for a customer, with a default project, an organization-scoped API key, a project-scoped API key, a default agent token, and a claim link.
 
 
-        These tokens are returned **once** in this response and are never shown again — store them when you create the organization.
-
-        '
+        These tokens are returned **once** in this response and are never shown again — store them when you create the organization.'
       tags:
       - Partner Organizations
       requestBody:
@@ -190,28 +169,30 @@ paths:
                 $ref: '#/components/schemas/Error'
 components:
   schemas:
-    RotateTokensResponse:
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
+    Project:
       type: object
       properties:
-        orgApiKey:
+        id:
           type: string
-        projectApiKey:
+        name:
           type: string
-    Error:
-      description: 'Error responses take one of two shapes depending on the failing layer:
-
-        route-level validation returns the flat shape (`{ "error": "..." }`),
-
-        while authentication failures (401/403) and service errors (not-found,
-
-        conflict, and service-level validation) return the envelope
-
-        (`{ "error": { "message": "...", "type": "..." } }`).
-
-        '
-      oneOf:
-      - $ref: '#/components/schemas/ErrorFlat'
-      - $ref: '#/components/schemas/ErrorEnvelope'
+        slug:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
     CreatePartnerOrgResponse:
       type: object
       description: Returned once when an organization is created. These tokens are never shown again.
@@ -232,23 +213,41 @@ components:
         claimUrl:
           type: string
           description: Link the customer opens to claim ownership.
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
     ClaimLinkResponse:
       type: object
       properties:
         claimUrl:
           type: string
-    Project:
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
+    RotateTokensResponse:
       type: object
       properties:
-        id:
+        orgApiKey:
           type: string
-        name:
+        projectApiKey:
           type: string
-        slug:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
     PartnerOrg:
       type: object
       properties:
@@ -280,26 +279,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Project'
-    ErrorFlat:
-      type: object
-      description: Flat error shape used by route-level validation.
-      properties:
-        error:
-          type: string
-      required:
-      - error
-    ErrorEnvelope:
-      type: object
-      description: Envelope error shape used for authentication failures and service errors.
-      properties:
-        error:
-          type: object
-          properties:
-            message:
-              type: string
-            type:
-              type: string
-              description: Error category (e.g. `authentication_error`).
   parameters:
     orgId:
       name: orgId

@@ -1,27 +1,8 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: OneCLI Agent Setup Approvals API
+  title: OneCLI Approvals API
   version: '1.0'
-  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
-
-
-    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
-
-
-    ## Authentication
-
-
-    All endpoints require authentication via one of:
-
-
-    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
-
-    - **Session** — Cookie-based session from the web dashboard.
-
-
-    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
-
-    '
+  description: The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
 servers:
 - url: https://api.onecli.sh/v1
   description: OneCLI Cloud
@@ -40,9 +21,7 @@ paths:
       description: 'Long-polls for manual-approval requests awaiting a decision in the current project. Returns immediately when any are pending, otherwise holds the connection open (up to `timeoutSeconds`) until one arrives or the poll times out.
 
 
-        Authenticate with a project API key, or an organization key plus an `X-Project-Id` header. Submit each decision to `POST /approvals/{id}/decision`.
-
-        '
+        Authenticate with a project API key, or an organization key plus an `X-Project-Id` header. Submit each decision to `POST /approvals/{id}/decision`.'
       tags:
       - Approvals
       parameters:
@@ -77,9 +56,7 @@ paths:
     post:
       operationId: submitApprovalDecision
       summary: Submit an approval decision
-      description: 'Approve or deny a pending manual-approval request. Approving forwards the held request to its upstream service; denying blocks it. Scope the call to the request''s project with a project API key or an `X-Project-Id` header.
-
-        '
+      description: Approve or deny a pending manual-approval request. Approving forwards the held request to its upstream service; denying blocks it. Scope the call to the request's project with a project API key or an `X-Project-Id` header.
       tags:
       - Approvals
       parameters:
@@ -128,6 +105,21 @@ paths:
                 $ref: '#/components/schemas/Error'
 components:
   schemas:
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
     PendingApproval:
       type: object
       description: A manual-approval request awaiting a decision, tagged with the project it belongs to.
@@ -178,21 +170,14 @@ components:
         expiresAt:
           type: string
           format: date-time
-    Error:
-      description: 'Error responses take one of two shapes depending on the failing layer:
-
-        route-level validation returns the flat shape (`{ "error": "..." }`),
-
-        while authentication failures (401/403) and service errors (not-found,
-
-        conflict, and service-level validation) return the envelope
-
-        (`{ "error": { "message": "...", "type": "..." } }`).
-
-        '
-      oneOf:
-      - $ref: '#/components/schemas/ErrorFlat'
-      - $ref: '#/components/schemas/ErrorEnvelope'
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
     ErrorEnvelope:
       type: object
       description: Envelope error shape used for authentication failures and service errors.
@@ -205,14 +190,6 @@ components:
             type:
               type: string
               description: Error category (e.g. `authentication_error`).
-    ErrorFlat:
-      type: object
-      description: Flat error shape used by route-level validation.
-      properties:
-        error:
-          type: string
-      required:
-      - error
   securitySchemes:
     bearerAuth:
       type: http

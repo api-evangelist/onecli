@@ -1,27 +1,8 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: OneCLI Agent Setup Apps API
+  title: OneCLI Apps API
   version: '1.0'
-  description: 'The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
-
-
-    **Base URL:** `https://api.onecli.sh/v1` (Cloud) or `http://localhost:10254/v1` (self-hosted)
-
-
-    ## Authentication
-
-
-    All endpoints require authentication via one of:
-
-
-    - **API Key** — `Authorization: Bearer <key>` header. Generate keys in the dashboard or via `GET /v1/user/api-key`.
-
-    - **Session** — Cookie-based session from the web dashboard.
-
-
-    For organization-scoped API keys, include the `X-Project-Id` header to specify which project to operate on.
-
-    '
+  description: The OneCLI API lets you manage agents, secrets, policy rules, app connections, and user settings programmatically.
 servers:
 - url: https://api.onecli.sh/v1
   description: OneCLI Cloud
@@ -84,9 +65,7 @@ paths:
       description: 'Redirects the user to the app''s OAuth authorization page. After the user authorizes, they are redirected back to the callback URL.
 
 
-        This endpoint is typically opened in a browser, not called from code.
-
-        '
+        This endpoint is typically opened in a browser, not called from code.'
       tags:
       - Apps
       parameters:
@@ -191,9 +170,7 @@ paths:
       description: 'Creates or updates the BYOC configuration for an app. Existing connections may be disconnected when credentials change.
 
 
-        The accepted field names are defined per app (e.g. `clientId`/`clientSecret` for OAuth apps; `appId`/`appSlug`/`privateKey` for `github-app`). Unknown keys are stripped.
-
-        '
+        The accepted field names are defined per app (e.g. `clientId`/`clientSecret` for OAuth apps; `appId`/`appSlug`/`privateKey` for `github-app`). Unknown keys are stripped.'
       tags:
       - Apps
       parameters:
@@ -308,9 +285,7 @@ paths:
     get:
       operationId: listPermissionDefinitions
       summary: List app permission definitions
-      description: 'Returns the tool catalog of every app that has one — the read/write groups and tool IDs that the permissions endpoints operate on. Global data; works without a project context, so organization keys can call it without `X-Project-Id`.
-
-        '
+      description: Returns the tool catalog of every app that has one — the read/write groups and tool IDs that the permissions endpoints operate on. Global data; works without a project context, so organization keys can call it without `X-Project-Id`.
       tags:
       - Apps
       responses:
@@ -326,9 +301,7 @@ paths:
     get:
       operationId: getPermissionDefinition
       summary: Get app permission definition
-      description: 'Returns the app''s static tool catalog — the read/write groups and tool IDs that the permissions endpoints (`/rules/permissions/{provider}` and `/org/rules/permissions/{provider}`) operate on. Global data; works without a project context, so organization keys can call it without `X-Project-Id`.
-
-        '
+      description: Returns the app's static tool catalog — the read/write groups and tool IDs that the permissions endpoints (`/rules/permissions/{provider}` and `/org/rules/permissions/{provider}`) operate on. Global data; works without a project context, so organization keys can call it without `X-Project-Id`.
       tags:
       - Apps
       parameters:
@@ -373,9 +346,7 @@ paths:
     post:
       operationId: addBlocklistEntry
       summary: Activate or add a blocklist entry
-      description: 'Provide either `{ hostId }` to activate one of the app''s predefined blocklist hosts, or `{ name, hostPattern }` to add a custom blocklist rule.
-
-        '
+      description: Provide either `{ hostId }` to activate one of the app's predefined blocklist hosts, or `{ name, hostPattern }` to add a custom blocklist rule.
       tags:
       - Apps
       parameters:
@@ -458,59 +429,34 @@ paths:
         '204':
           description: Rule removed
 components:
-  parameters:
-    blocklistRuleId:
-      name: ruleId
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Blocklist rule ID (from the blocklist state's `ruleId` field)
-    provider:
-      name: provider
-      in: path
-      required: true
-      schema:
-        type: string
-      description: App provider identifier (e.g., `gmail`, `github`, `jira`)
   schemas:
-    BlocklistHostState:
+    ErrorEnvelope:
       type: object
-      description: State of one blocklist entry — a predefined host or a custom rule.
+      description: Envelope error shape used for authentication failures and service errors.
       properties:
-        hostId:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
+    AppToolGroup:
+      type: object
+      properties:
+        category:
           type: string
-        ruleId:
-          type: string
-          nullable: true
-          description: The backing rule ID, or null when a predefined host has never been activated.
-        enabled:
-          type: boolean
-        custom:
-          type: boolean
-          description: True for custom rules, false for the app's predefined hosts.
-        name:
-          type: string
-        hostPattern:
-          type: string
-        scope:
-          type: string
-          nullable: true
           enum:
-          - project
-          - organization
-          - null
-    AppTool:
-      type: object
-      description: One operation in an app's permission catalog, by identity. The endpoint mapping behind a tool is internal; permission changes reference the tool ID and the server resolves the rest.
-      properties:
-        id:
-          type: string
-          description: The tool ID that permission changes reference.
-        name:
-          type: string
-        description:
-          type: string
+          - read
+          - write
+        tools:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppTool'
+        wildcard:
+          $ref: '#/components/schemas/AppTool'
+          description: Optional wildcard tool covering the whole group ("all read/write operations").
     App:
       type: object
       properties:
@@ -569,6 +515,40 @@ components:
               content:
                 type: object
                 description: Stub file content with `onecli-managed` sentinel values.
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    BlocklistHostState:
+      type: object
+      description: State of one blocklist entry — a predefined host or a custom rule.
+      properties:
+        hostId:
+          type: string
+        ruleId:
+          type: string
+          nullable: true
+          description: The backing rule ID, or null when a predefined host has never been activated.
+        enabled:
+          type: boolean
+        custom:
+          type: boolean
+          description: True for custom rules, false for the app's predefined hosts.
+        name:
+          type: string
+        hostPattern:
+          type: string
+        scope:
+          type: string
+          nullable: true
+          enum:
+          - project
+          - organization
+          - null
     PermissionDefinition:
       type: object
       description: An app's static tool catalog — the tool IDs that the permissions endpoints operate on.
@@ -594,41 +574,32 @@ components:
       oneOf:
       - $ref: '#/components/schemas/ErrorFlat'
       - $ref: '#/components/schemas/ErrorEnvelope'
-    ErrorFlat:
+    AppTool:
       type: object
-      description: Flat error shape used by route-level validation.
+      description: One operation in an app's permission catalog, by identity. The endpoint mapping behind a tool is internal; permission changes reference the tool ID and the server resolves the rest.
       properties:
-        error:
+        id:
           type: string
-      required:
-      - error
-    AppToolGroup:
-      type: object
-      properties:
-        category:
+          description: The tool ID that permission changes reference.
+        name:
           type: string
-          enum:
-          - read
-          - write
-        tools:
-          type: array
-          items:
-            $ref: '#/components/schemas/AppTool'
-        wildcard:
-          $ref: '#/components/schemas/AppTool'
-          description: Optional wildcard tool covering the whole group ("all read/write operations").
-    ErrorEnvelope:
-      type: object
-      description: Envelope error shape used for authentication failures and service errors.
-      properties:
-        error:
-          type: object
-          properties:
-            message:
-              type: string
-            type:
-              type: string
-              description: Error category (e.g. `authentication_error`).
+        description:
+          type: string
+  parameters:
+    blocklistRuleId:
+      name: ruleId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Blocklist rule ID (from the blocklist state's `ruleId` field)
+    provider:
+      name: provider
+      in: path
+      required: true
+      schema:
+        type: string
+      description: App provider identifier (e.g., `gmail`, `github`, `jira`)
   securitySchemes:
     bearerAuth:
       type: http
