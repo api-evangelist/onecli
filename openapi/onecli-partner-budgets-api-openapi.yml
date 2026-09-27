@@ -136,6 +136,21 @@ components:
             type:
               type: string
               description: Error category (e.g. `authentication_error`).
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
     Budget:
       type: object
       properties:
@@ -165,30 +180,15 @@ components:
           type: string
       required:
       - error
-    Error:
-      description: 'Error responses take one of two shapes depending on the failing layer:
-
-        route-level validation returns the flat shape (`{ "error": "..." }`),
-
-        while authentication failures (401/403) and service errors (not-found,
-
-        conflict, and service-level validation) return the envelope
-
-        (`{ "error": { "message": "...", "type": "..." } }`).
-
-        '
-      oneOf:
-      - $ref: '#/components/schemas/ErrorFlat'
-      - $ref: '#/components/schemas/ErrorEnvelope'
   parameters:
-    orgId:
-      name: orgId
+    secretId:
+      name: secretId
       in: path
       required: true
       schema:
         type: string
-    secretId:
-      name: secretId
+    orgId:
+      name: orgId
       in: path
       required: true
       schema:

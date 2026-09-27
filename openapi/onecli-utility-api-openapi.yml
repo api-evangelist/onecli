@@ -70,20 +70,6 @@ paths:
                   $ref: '#/components/schemas/VaultConnection'
 components:
   schemas:
-    ResourceCounts:
-      type: object
-      properties:
-        agents:
-          type: integer
-        apps:
-          type: integer
-          description: Connected app connections (including inherited organization connections).
-        llms:
-          type: integer
-          description: Non-generic secrets (LLM keys).
-        secrets:
-          type: integer
-          description: Generic secrets.
     VaultConnection:
       type: object
       properties:
@@ -101,6 +87,20 @@ components:
           type: string
           format: date-time
           nullable: true
+    ResourceCounts:
+      type: object
+      properties:
+        agents:
+          type: integer
+        apps:
+          type: integer
+          description: Connected app connections (including inherited organization connections).
+        llms:
+          type: integer
+          description: Non-generic secrets (LLM keys).
+        secrets:
+          type: integer
+          description: Generic secrets.
   securitySchemes:
     bearerAuth:
       type: http

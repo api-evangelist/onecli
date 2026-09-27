@@ -181,18 +181,11 @@ components:
             type:
               type: string
               description: Error category (e.g. `authentication_error`).
-    Project:
+    ClaimLinkResponse:
       type: object
       properties:
-        id:
+        claimUrl:
           type: string
-        name:
-          type: string
-        slug:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
     CreatePartnerOrgResponse:
       type: object
       description: Returned once when an organization is created. These tokens are never shown again.
@@ -213,19 +206,18 @@ components:
         claimUrl:
           type: string
           description: Link the customer opens to claim ownership.
-    ErrorFlat:
-      type: object
-      description: Flat error shape used by route-level validation.
-      properties:
-        error:
-          type: string
-      required:
-      - error
-    ClaimLinkResponse:
+    Project:
       type: object
       properties:
-        claimUrl:
+        id:
           type: string
+        name:
+          type: string
+        slug:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
     Error:
       description: 'Error responses take one of two shapes depending on the failing layer:
 
@@ -241,13 +233,6 @@ components:
       oneOf:
       - $ref: '#/components/schemas/ErrorFlat'
       - $ref: '#/components/schemas/ErrorEnvelope'
-    RotateTokensResponse:
-      type: object
-      properties:
-        orgApiKey:
-          type: string
-        projectApiKey:
-          type: string
     PartnerOrg:
       type: object
       properties:
@@ -279,6 +264,21 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Project'
+    RotateTokensResponse:
+      type: object
+      properties:
+        orgApiKey:
+          type: string
+        projectApiKey:
+          type: string
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
   parameters:
     orgId:
       name: orgId

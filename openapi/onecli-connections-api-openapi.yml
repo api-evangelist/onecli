@@ -100,20 +100,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 components:
-  parameters:
-    providerQuery:
-      name: provider
-      in: query
-      required: false
-      schema:
-        type: string
-      description: Filter results to a single provider (e.g. `gmail`, `github`)
-    connectionId:
-      name: connectionId
-      in: path
-      required: true
-      schema:
-        type: string
   schemas:
     ErrorEnvelope:
       type: object
@@ -127,14 +113,6 @@ components:
             type:
               type: string
               description: Error category (e.g. `authentication_error`).
-    ErrorFlat:
-      type: object
-      description: Flat error shape used by route-level validation.
-      properties:
-        error:
-          type: string
-      required:
-      - error
     Error:
       description: 'Error responses take one of two shapes depending on the failing layer:
 
@@ -180,6 +158,28 @@ components:
         connectedAt:
           type: string
           format: date-time
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
+  parameters:
+    connectionId:
+      name: connectionId
+      in: path
+      required: true
+      schema:
+        type: string
+    providerQuery:
+      name: provider
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Filter results to a single provider (e.g. `gmail`, `github`)
   securitySchemes:
     bearerAuth:
       type: http

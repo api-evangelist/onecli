@@ -433,14 +433,6 @@ components:
             type:
               type: string
               description: Error category (e.g. `authentication_error`).
-    ErrorFlat:
-      type: object
-      description: Flat error shape used by route-level validation.
-      properties:
-        error:
-          type: string
-      required:
-      - error
     Error:
       description: 'Error responses take one of two shapes depending on the failing layer:
 
@@ -485,6 +477,14 @@ components:
               type: integer
             agentAppConnections:
               type: integer
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
   parameters:
     agentId:
       name: agentId

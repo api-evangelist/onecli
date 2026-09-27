@@ -442,21 +442,16 @@ components:
             type:
               type: string
               description: Error category (e.g. `authentication_error`).
-    AppToolGroup:
+    PermissionDefinition:
       type: object
+      description: An app's static tool catalog — the tool IDs that the permissions endpoints operate on.
       properties:
-        category:
+        provider:
           type: string
-          enum:
-          - read
-          - write
-        tools:
+        groups:
           type: array
           items:
-            $ref: '#/components/schemas/AppTool'
-        wildcard:
-          $ref: '#/components/schemas/AppTool'
-          description: Optional wildcard tool covering the whole group ("all read/write operations").
+            $ref: '#/components/schemas/AppToolGroup'
     App:
       type: object
       properties:
@@ -515,50 +510,6 @@ components:
               content:
                 type: object
                 description: Stub file content with `onecli-managed` sentinel values.
-    ErrorFlat:
-      type: object
-      description: Flat error shape used by route-level validation.
-      properties:
-        error:
-          type: string
-      required:
-      - error
-    BlocklistHostState:
-      type: object
-      description: State of one blocklist entry — a predefined host or a custom rule.
-      properties:
-        hostId:
-          type: string
-        ruleId:
-          type: string
-          nullable: true
-          description: The backing rule ID, or null when a predefined host has never been activated.
-        enabled:
-          type: boolean
-        custom:
-          type: boolean
-          description: True for custom rules, false for the app's predefined hosts.
-        name:
-          type: string
-        hostPattern:
-          type: string
-        scope:
-          type: string
-          nullable: true
-          enum:
-          - project
-          - organization
-          - null
-    PermissionDefinition:
-      type: object
-      description: An app's static tool catalog — the tool IDs that the permissions endpoints operate on.
-      properties:
-        provider:
-          type: string
-        groups:
-          type: array
-          items:
-            $ref: '#/components/schemas/AppToolGroup'
     Error:
       description: 'Error responses take one of two shapes depending on the failing layer:
 
@@ -585,6 +536,55 @@ components:
           type: string
         description:
           type: string
+    BlocklistHostState:
+      type: object
+      description: State of one blocklist entry — a predefined host or a custom rule.
+      properties:
+        hostId:
+          type: string
+        ruleId:
+          type: string
+          nullable: true
+          description: The backing rule ID, or null when a predefined host has never been activated.
+        enabled:
+          type: boolean
+        custom:
+          type: boolean
+          description: True for custom rules, false for the app's predefined hosts.
+        name:
+          type: string
+        hostPattern:
+          type: string
+        scope:
+          type: string
+          nullable: true
+          enum:
+          - project
+          - organization
+          - null
+    AppToolGroup:
+      type: object
+      properties:
+        category:
+          type: string
+          enum:
+          - read
+          - write
+        tools:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppTool'
+        wildcard:
+          $ref: '#/components/schemas/AppTool'
+          description: Optional wildcard tool covering the whole group ("all read/write operations").
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
   parameters:
     blocklistRuleId:
       name: ruleId
