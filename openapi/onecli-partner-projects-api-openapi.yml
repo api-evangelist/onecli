@@ -99,7 +99,43 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 components:
+  parameters:
+    orgId:
+      name: orgId
+      in: path
+      required: true
+      schema:
+        type: string
+    projectId:
+      name: projectId
+      in: path
+      required: true
+      schema:
+        type: string
   schemas:
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
     ErrorEnvelope:
       type: object
       description: Envelope error shape used for authentication failures and service errors.
@@ -124,42 +160,6 @@ components:
         createdAt:
           type: string
           format: date-time
-    Error:
-      description: 'Error responses take one of two shapes depending on the failing layer:
-
-        route-level validation returns the flat shape (`{ "error": "..." }`),
-
-        while authentication failures (401/403) and service errors (not-found,
-
-        conflict, and service-level validation) return the envelope
-
-        (`{ "error": { "message": "...", "type": "..." } }`).
-
-        '
-      oneOf:
-      - $ref: '#/components/schemas/ErrorFlat'
-      - $ref: '#/components/schemas/ErrorEnvelope'
-    ErrorFlat:
-      type: object
-      description: Flat error shape used by route-level validation.
-      properties:
-        error:
-          type: string
-      required:
-      - error
-  parameters:
-    projectId:
-      name: projectId
-      in: path
-      required: true
-      schema:
-        type: string
-    orgId:
-      name: orgId
-      in: path
-      required: true
-      schema:
-        type: string
   securitySchemes:
     bearerAuth:
       type: http

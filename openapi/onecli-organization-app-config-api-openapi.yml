@@ -368,33 +368,6 @@ paths:
           description: Rule removed
 components:
   schemas:
-    ErrorEnvelope:
-      type: object
-      description: Envelope error shape used for authentication failures and service errors.
-      properties:
-        error:
-          type: object
-          properties:
-            message:
-              type: string
-            type:
-              type: string
-              description: Error category (e.g. `authentication_error`).
-    Error:
-      description: 'Error responses take one of two shapes depending on the failing layer:
-
-        route-level validation returns the flat shape (`{ "error": "..." }`),
-
-        while authentication failures (401/403) and service errors (not-found,
-
-        conflict, and service-level validation) return the envelope
-
-        (`{ "error": { "message": "...", "type": "..." } }`).
-
-        '
-      oneOf:
-      - $ref: '#/components/schemas/ErrorFlat'
-      - $ref: '#/components/schemas/ErrorEnvelope'
     BlocklistHostState:
       type: object
       description: State of one blocklist entry — a predefined host or a custom rule.
@@ -421,6 +394,21 @@ components:
           - project
           - organization
           - null
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
     ErrorFlat:
       type: object
       description: Flat error shape used by route-level validation.
@@ -429,6 +417,18 @@ components:
           type: string
       required:
       - error
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
   parameters:
     provider:
       name: provider

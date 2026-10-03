@@ -421,18 +421,6 @@ paths:
                 $ref: '#/components/schemas/Error'
 components:
   schemas:
-    ErrorEnvelope:
-      type: object
-      description: Envelope error shape used for authentication failures and service errors.
-      properties:
-        error:
-          type: object
-          properties:
-            message:
-              type: string
-            type:
-              type: string
-              description: Error category (e.g. `authentication_error`).
     Error:
       description: 'Error responses take one of two shapes depending on the failing layer:
 
@@ -448,6 +436,26 @@ components:
       oneOf:
       - $ref: '#/components/schemas/ErrorFlat'
       - $ref: '#/components/schemas/ErrorEnvelope'
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
     Agent:
       type: object
       properties:
@@ -477,14 +485,6 @@ components:
               type: integer
             agentAppConnections:
               type: integer
-    ErrorFlat:
-      type: object
-      description: Flat error shape used by route-level validation.
-      properties:
-        error:
-          type: string
-      required:
-      - error
   parameters:
     agentId:
       name: agentId

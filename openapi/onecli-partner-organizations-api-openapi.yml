@@ -168,71 +168,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 components:
+  parameters:
+    orgId:
+      name: orgId
+      in: path
+      required: true
+      schema:
+        type: string
   schemas:
-    ErrorEnvelope:
-      type: object
-      description: Envelope error shape used for authentication failures and service errors.
-      properties:
-        error:
-          type: object
-          properties:
-            message:
-              type: string
-            type:
-              type: string
-              description: Error category (e.g. `authentication_error`).
-    ClaimLinkResponse:
-      type: object
-      properties:
-        claimUrl:
-          type: string
-    CreatePartnerOrgResponse:
-      type: object
-      description: Returned once when an organization is created. These tokens are never shown again.
-      properties:
-        organizationId:
-          type: string
-        projectId:
-          type: string
-        orgApiKey:
-          type: string
-          description: Organization-scoped API key (`oc_org_…`).
-        projectApiKey:
-          type: string
-          description: Project-scoped API key for the default project.
-        agentToken:
-          type: string
-          description: Access token for the default agent.
-        claimUrl:
-          type: string
-          description: Link the customer opens to claim ownership.
-    Project:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        slug:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-    Error:
-      description: 'Error responses take one of two shapes depending on the failing layer:
-
-        route-level validation returns the flat shape (`{ "error": "..." }`),
-
-        while authentication failures (401/403) and service errors (not-found,
-
-        conflict, and service-level validation) return the envelope
-
-        (`{ "error": { "message": "...", "type": "..." } }`).
-
-        '
-      oneOf:
-      - $ref: '#/components/schemas/ErrorFlat'
-      - $ref: '#/components/schemas/ErrorEnvelope'
     PartnerOrg:
       type: object
       properties:
@@ -264,13 +207,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Project'
-    RotateTokensResponse:
+    ClaimLinkResponse:
       type: object
       properties:
-        orgApiKey:
+        claimUrl:
           type: string
-        projectApiKey:
-          type: string
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
     ErrorFlat:
       type: object
       description: Flat error shape used by route-level validation.
@@ -279,13 +235,57 @@ components:
           type: string
       required:
       - error
-  parameters:
-    orgId:
-      name: orgId
-      in: path
-      required: true
-      schema:
-        type: string
+    RotateTokensResponse:
+      type: object
+      properties:
+        orgApiKey:
+          type: string
+        projectApiKey:
+          type: string
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
+    Project:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    CreatePartnerOrgResponse:
+      type: object
+      description: Returned once when an organization is created. These tokens are never shown again.
+      properties:
+        organizationId:
+          type: string
+        projectId:
+          type: string
+        orgApiKey:
+          type: string
+          description: Organization-scoped API key (`oc_org_…`).
+        projectApiKey:
+          type: string
+          description: Project-scoped API key for the default project.
+        agentToken:
+          type: string
+          description: Access token for the default agent.
+        claimUrl:
+          type: string
+          description: Link the customer opens to claim ownership.
   securitySchemes:
     bearerAuth:
       type: http

@@ -430,28 +430,6 @@ paths:
           description: Rule removed
 components:
   schemas:
-    ErrorEnvelope:
-      type: object
-      description: Envelope error shape used for authentication failures and service errors.
-      properties:
-        error:
-          type: object
-          properties:
-            message:
-              type: string
-            type:
-              type: string
-              description: Error category (e.g. `authentication_error`).
-    PermissionDefinition:
-      type: object
-      description: An app's static tool catalog — the tool IDs that the permissions endpoints operate on.
-      properties:
-        provider:
-          type: string
-        groups:
-          type: array
-          items:
-            $ref: '#/components/schemas/AppToolGroup'
     App:
       type: object
       properties:
@@ -510,21 +488,6 @@ components:
               content:
                 type: object
                 description: Stub file content with `onecli-managed` sentinel values.
-    Error:
-      description: 'Error responses take one of two shapes depending on the failing layer:
-
-        route-level validation returns the flat shape (`{ "error": "..." }`),
-
-        while authentication failures (401/403) and service errors (not-found,
-
-        conflict, and service-level validation) return the envelope
-
-        (`{ "error": { "message": "...", "type": "..." } }`).
-
-        '
-      oneOf:
-      - $ref: '#/components/schemas/ErrorFlat'
-      - $ref: '#/components/schemas/ErrorEnvelope'
     AppTool:
       type: object
       description: One operation in an app's permission catalog, by identity. The endpoint mapping behind a tool is internal; permission changes reference the tool ID and the server resolves the rest.
@@ -562,6 +525,51 @@ components:
           - project
           - organization
           - null
+    PermissionDefinition:
+      type: object
+      description: An app's static tool catalog — the tool IDs that the permissions endpoints operate on.
+      properties:
+        provider:
+          type: string
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppToolGroup'
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
     AppToolGroup:
       type: object
       properties:
@@ -577,22 +585,7 @@ components:
         wildcard:
           $ref: '#/components/schemas/AppTool'
           description: Optional wildcard tool covering the whole group ("all read/write operations").
-    ErrorFlat:
-      type: object
-      description: Flat error shape used by route-level validation.
-      properties:
-        error:
-          type: string
-      required:
-      - error
   parameters:
-    blocklistRuleId:
-      name: ruleId
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Blocklist rule ID (from the blocklist state's `ruleId` field)
     provider:
       name: provider
       in: path
@@ -600,6 +593,13 @@ components:
       schema:
         type: string
       description: App provider identifier (e.g., `gmail`, `github`, `jira`)
+    blocklistRuleId:
+      name: ruleId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Blocklist rule ID (from the blocklist state's `ruleId` field)
   securitySchemes:
     bearerAuth:
       type: http
