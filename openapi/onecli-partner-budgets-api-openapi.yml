@@ -123,20 +123,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 components:
-  parameters:
-    orgId:
-      name: orgId
-      in: path
-      required: true
-      schema:
-        type: string
-    secretId:
-      name: secretId
-      in: path
-      required: true
-      schema:
-        type: string
   schemas:
+    Budget:
+      type: object
+      properties:
+        secretId:
+          type: string
+          description: The partner LLM key this budget caps.
+        organizationId:
+          type: string
+        limitCents:
+          type: integer
+          description: Spend ceiling in US cents (e.g. `500` = $5.00).
+          example: 500
+        period:
+          type: string
+          enum:
+          - monthly
+          - total
+        spentCents:
+          type: integer
+          description: Spend so far this period, in US cents. Updates within a few seconds of usage.
+          example: 320
     Error:
       description: 'Error responses take one of two shapes depending on the failing layer:
 
@@ -160,27 +168,6 @@ components:
           type: string
       required:
       - error
-    Budget:
-      type: object
-      properties:
-        secretId:
-          type: string
-          description: The partner LLM key this budget caps.
-        organizationId:
-          type: string
-        limitCents:
-          type: integer
-          description: Spend ceiling in US cents (e.g. `500` = $5.00).
-          example: 500
-        period:
-          type: string
-          enum:
-          - monthly
-          - total
-        spentCents:
-          type: integer
-          description: Spend so far this period, in US cents. Updates within a few seconds of usage.
-          example: 320
     ErrorEnvelope:
       type: object
       description: Envelope error shape used for authentication failures and service errors.
@@ -193,6 +180,19 @@ components:
             type:
               type: string
               description: Error category (e.g. `authentication_error`).
+  parameters:
+    orgId:
+      name: orgId
+      in: path
+      required: true
+      schema:
+        type: string
+    secretId:
+      name: secretId
+      in: path
+      required: true
+      schema:
+        type: string
   securitySchemes:
     bearerAuth:
       type: http

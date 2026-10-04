@@ -367,7 +367,45 @@ paths:
         '204':
           description: Rule removed
 components:
+  parameters:
+    blocklistRuleId:
+      name: ruleId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Blocklist rule ID (from the blocklist state's `ruleId` field)
+    provider:
+      name: provider
+      in: path
+      required: true
+      schema:
+        type: string
+      description: App provider identifier (e.g., `gmail`, `github`, `jira`)
   schemas:
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
     BlocklistHostState:
       type: object
       description: State of one blocklist entry — a predefined host or a custom rule.
@@ -394,29 +432,6 @@ components:
           - project
           - organization
           - null
-    Error:
-      description: 'Error responses take one of two shapes depending on the failing layer:
-
-        route-level validation returns the flat shape (`{ "error": "..." }`),
-
-        while authentication failures (401/403) and service errors (not-found,
-
-        conflict, and service-level validation) return the envelope
-
-        (`{ "error": { "message": "...", "type": "..." } }`).
-
-        '
-      oneOf:
-      - $ref: '#/components/schemas/ErrorFlat'
-      - $ref: '#/components/schemas/ErrorEnvelope'
-    ErrorFlat:
-      type: object
-      description: Flat error shape used by route-level validation.
-      properties:
-        error:
-          type: string
-      required:
-      - error
     ErrorEnvelope:
       type: object
       description: Envelope error shape used for authentication failures and service errors.
@@ -429,21 +444,6 @@ components:
             type:
               type: string
               description: Error category (e.g. `authentication_error`).
-  parameters:
-    provider:
-      name: provider
-      in: path
-      required: true
-      schema:
-        type: string
-      description: App provider identifier (e.g., `gmail`, `github`, `jira`)
-    blocklistRuleId:
-      name: ruleId
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Blocklist rule ID (from the blocklist state's `ruleId` field)
   securitySchemes:
     bearerAuth:
       type: http

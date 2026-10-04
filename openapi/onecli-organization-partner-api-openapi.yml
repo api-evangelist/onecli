@@ -75,15 +75,51 @@ paths:
                 $ref: '#/components/schemas/Error'
 components:
   schemas:
-    PartnerLinkStatus:
+    Secret:
       type: object
       properties:
-        partnerManaged:
-          type: boolean
-          description: True if the organization was created by a partner.
-        detached:
-          type: boolean
-          description: True if the organization has detached from its partner.
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+          - anthropic
+          - openai
+          - generic
+        valueSource:
+          type: string
+          enum:
+          - inline
+          - onepassword
+          description: Where the secret value lives — stored encrypted (`inline`) or resolved from 1Password at request time (`onepassword`).
+        opRef:
+          type: string
+          nullable: true
+          description: 1Password secret reference (`op://vault/item/field`). Only set when `valueSource` is `onepassword`.
+        hostPattern:
+          type: string
+        pathPattern:
+          type: string
+          nullable: true
+        injectionConfig:
+          $ref: '#/components/schemas/InjectionConfig'
+        metadata:
+          type: object
+          nullable: true
+          description: Type-specific metadata (e.g. `authMode` for `anthropic`/`openai` secrets, 1Password display labels).
+        scope:
+          type: string
+          enum:
+          - project
+          - organization
+          description: Project lists include inherited organization secrets; use this to tell them apart.
+        typeLabel:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
     Error:
       description: 'Error responses take one of two shapes depending on the failing layer:
 
@@ -107,6 +143,15 @@ components:
           type: string
       required:
       - error
+    PartnerLinkStatus:
+      type: object
+      properties:
+        partnerManaged:
+          type: boolean
+          description: True if the organization was created by a partner.
+        detached:
+          type: boolean
+          description: True if the organization has detached from its partner.
     ErrorEnvelope:
       type: object
       description: Envelope error shape used for authentication failures and service errors.
@@ -183,51 +228,6 @@ components:
             type: string
             description: Replacement with `$N` capture references and a `{value}` token for the secret.
         additionalProperties: false
-    Secret:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        type:
-          type: string
-          enum:
-          - anthropic
-          - openai
-          - generic
-        valueSource:
-          type: string
-          enum:
-          - inline
-          - onepassword
-          description: Where the secret value lives — stored encrypted (`inline`) or resolved from 1Password at request time (`onepassword`).
-        opRef:
-          type: string
-          nullable: true
-          description: 1Password secret reference (`op://vault/item/field`). Only set when `valueSource` is `onepassword`.
-        hostPattern:
-          type: string
-        pathPattern:
-          type: string
-          nullable: true
-        injectionConfig:
-          $ref: '#/components/schemas/InjectionConfig'
-        metadata:
-          type: object
-          nullable: true
-          description: Type-specific metadata (e.g. `authMode` for `anthropic`/`openai` secrets, 1Password display labels).
-        scope:
-          type: string
-          enum:
-          - project
-          - organization
-          description: Project lists include inherited organization secrets; use this to tell them apart.
-        typeLabel:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
   securitySchemes:
     bearerAuth:
       type: http

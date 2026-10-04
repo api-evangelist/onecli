@@ -316,35 +316,44 @@ paths:
                     type: integer
 components:
   schemas:
-    PermissionState:
+    PermissionChange:
       type: object
+      required:
+      - toolId
+      - permission
       properties:
+        toolId:
+          type: string
+          minLength: 1
         permission:
           type: string
           enum:
           - allow
           - manual_approval
           - block
-        conditions:
-          type: array
-          items:
-            type: object
-    AppPermissionStates:
+    Error:
+      description: 'Error responses take one of two shapes depending on the failing layer:
+
+        route-level validation returns the flat shape (`{ "error": "..." }`),
+
+        while authentication failures (401/403) and service errors (not-found,
+
+        conflict, and service-level validation) return the envelope
+
+        (`{ "error": { "message": "...", "type": "..." } }`).
+
+        '
+      oneOf:
+      - $ref: '#/components/schemas/ErrorFlat'
+      - $ref: '#/components/schemas/ErrorEnvelope'
+    ErrorFlat:
       type: object
-      description: Layered app-permission states for a provider.
+      description: Flat error shape used by route-level validation.
       properties:
-        defaults:
-          type: object
-          description: Tool states from the all-agents layer (tool ID → state).
-          additionalProperties:
-            $ref: '#/components/schemas/PermissionState'
-        byAgent:
-          type: object
-          description: Per-agent override layers (agent ID → tool ID → state). Always empty at the organization scope, where rules are agent-less.
-          additionalProperties:
-            type: object
-            additionalProperties:
-              $ref: '#/components/schemas/PermissionState'
+        error:
+          type: string
+      required:
+      - error
     RuleCondition:
       type: object
       description: A condition that must match for the rule to apply. Conditions inspect the request body to enable fine-grained filtering beyond host/path/method.
@@ -372,56 +381,35 @@ components:
           type: string
           maxLength: 500
           description: Optional JSON key path within the body to scope the match.
-    Error:
-      description: 'Error responses take one of two shapes depending on the failing layer:
-
-        route-level validation returns the flat shape (`{ "error": "..." }`),
-
-        while authentication failures (401/403) and service errors (not-found,
-
-        conflict, and service-level validation) return the envelope
-
-        (`{ "error": { "message": "...", "type": "..." } }`).
-
-        '
-      oneOf:
-      - $ref: '#/components/schemas/ErrorFlat'
-      - $ref: '#/components/schemas/ErrorEnvelope'
-    PermissionChange:
+    AppPermissionStates:
       type: object
-      required:
-      - toolId
-      - permission
+      description: Layered app-permission states for a provider.
       properties:
-        toolId:
-          type: string
-          minLength: 1
+        defaults:
+          type: object
+          description: Tool states from the all-agents layer (tool ID → state).
+          additionalProperties:
+            $ref: '#/components/schemas/PermissionState'
+        byAgent:
+          type: object
+          description: Per-agent override layers (agent ID → tool ID → state). Always empty at the organization scope, where rules are agent-less.
+          additionalProperties:
+            type: object
+            additionalProperties:
+              $ref: '#/components/schemas/PermissionState'
+    PermissionState:
+      type: object
+      properties:
         permission:
           type: string
           enum:
           - allow
           - manual_approval
           - block
-    ErrorEnvelope:
-      type: object
-      description: Envelope error shape used for authentication failures and service errors.
-      properties:
-        error:
-          type: object
-          properties:
-            message:
-              type: string
-            type:
-              type: string
-              description: Error category (e.g. `authentication_error`).
-    ErrorFlat:
-      type: object
-      description: Flat error shape used by route-level validation.
-      properties:
-        error:
-          type: string
-      required:
-      - error
+        conditions:
+          type: array
+          items:
+            type: object
     PolicyRule:
       type: object
       description: 'A policy rule. Custom (user-authored) rules carry their endpoint fields (`hostPattern`/`pathPattern`/`method`); app-permission rules (`metadata.source: app_permission`) omit them and are identified by `metadata.provider` + `metadata.toolId`.'
@@ -488,6 +476,18 @@ components:
         createdAt:
           type: string
           format: date-time
+    ErrorEnvelope:
+      type: object
+      description: Envelope error shape used for authentication failures and service errors.
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
   parameters:
     ruleId:
       name: ruleId
