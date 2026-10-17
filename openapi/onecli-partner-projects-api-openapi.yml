@@ -100,6 +100,18 @@ paths:
                 $ref: '#/components/schemas/Error'
 components:
   schemas:
+    Project:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
     Error:
       description: 'Error responses take one of two shapes depending on the failing layer:
 
@@ -115,26 +127,6 @@ components:
       oneOf:
       - $ref: '#/components/schemas/ErrorFlat'
       - $ref: '#/components/schemas/ErrorEnvelope'
-    ErrorFlat:
-      type: object
-      description: Flat error shape used by route-level validation.
-      properties:
-        error:
-          type: string
-      required:
-      - error
-    Project:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        slug:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
     ErrorEnvelope:
       type: object
       description: Envelope error shape used for authentication failures and service errors.
@@ -147,15 +139,23 @@ components:
             type:
               type: string
               description: Error category (e.g. `authentication_error`).
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
   parameters:
-    orgId:
-      name: orgId
+    projectId:
+      name: projectId
       in: path
       required: true
       schema:
         type: string
-    projectId:
-      name: projectId
+    orgId:
+      name: orgId
       in: path
       required: true
       schema:

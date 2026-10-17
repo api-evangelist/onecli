@@ -398,14 +398,18 @@ components:
       oneOf:
       - $ref: '#/components/schemas/ErrorFlat'
       - $ref: '#/components/schemas/ErrorEnvelope'
-    ErrorFlat:
+    ErrorEnvelope:
       type: object
-      description: Flat error shape used by route-level validation.
+      description: Envelope error shape used for authentication failures and service errors.
       properties:
         error:
-          type: string
-      required:
-      - error
+          type: object
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              description: Error category (e.g. `authentication_error`).
     BlocklistHostState:
       type: object
       description: State of one blocklist entry — a predefined host or a custom rule.
@@ -432,18 +436,14 @@ components:
           - project
           - organization
           - null
-    ErrorEnvelope:
+    ErrorFlat:
       type: object
-      description: Envelope error shape used for authentication failures and service errors.
+      description: Flat error shape used by route-level validation.
       properties:
         error:
-          type: object
-          properties:
-            message:
-              type: string
-            type:
-              type: string
-              description: Error category (e.g. `authentication_error`).
+          type: string
+      required:
+      - error
   securitySchemes:
     bearerAuth:
       type: http

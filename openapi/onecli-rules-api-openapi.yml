@@ -336,6 +336,23 @@ paths:
                     type: integer
 components:
   schemas:
+    ProjectPermissionChange:
+      type: object
+      required:
+      - toolId
+      - permission
+      properties:
+        toolId:
+          type: string
+          minLength: 1
+        permission:
+          type: string
+          enum:
+          - allow
+          - manual_approval
+          - block
+          - inherit
+          description: '`inherit` is only valid together with `agentId`: it removes the agent''s override so the tool falls back to the all-agents setting.'
     Error:
       description: 'Error responses take one of two shapes depending on the failing layer:
 
@@ -351,41 +368,19 @@ components:
       oneOf:
       - $ref: '#/components/schemas/ErrorFlat'
       - $ref: '#/components/schemas/ErrorEnvelope'
-    ErrorFlat:
+    PermissionState:
       type: object
-      description: Flat error shape used by route-level validation.
       properties:
-        error:
-          type: string
-      required:
-      - error
-    RuleCondition:
-      type: object
-      description: A condition that must match for the rule to apply. Conditions inspect the request body to enable fine-grained filtering beyond host/path/method.
-      required:
-      - target
-      - operator
-      - value
-      properties:
-        target:
+        permission:
           type: string
           enum:
-          - body
-          description: What part of the request to inspect.
-        operator:
-          type: string
-          enum:
-          - contains
-          description: How to match the value against the target.
-        value:
-          type: string
-          minLength: 1
-          maxLength: 1000
-          description: The string to match against.
-        key:
-          type: string
-          maxLength: 500
-          description: Optional JSON key path within the body to scope the match.
+          - allow
+          - manual_approval
+          - block
+        conditions:
+          type: array
+          items:
+            type: object
     AppPermissionStates:
       type: object
       description: Layered app-permission states for a provider.
@@ -402,19 +397,6 @@ components:
             type: object
             additionalProperties:
               $ref: '#/components/schemas/PermissionState'
-    PermissionState:
-      type: object
-      properties:
-        permission:
-          type: string
-          enum:
-          - allow
-          - manual_approval
-          - block
-        conditions:
-          type: array
-          items:
-            type: object
     PolicyRule:
       type: object
       description: 'A policy rule. Custom (user-authored) rules carry their endpoint fields (`hostPattern`/`pathPattern`/`method`); app-permission rules (`metadata.source: app_permission`) omit them and are identified by `metadata.provider` + `metadata.toolId`.'
@@ -493,23 +475,41 @@ components:
             type:
               type: string
               description: Error category (e.g. `authentication_error`).
-    ProjectPermissionChange:
+    RuleCondition:
       type: object
+      description: A condition that must match for the rule to apply. Conditions inspect the request body to enable fine-grained filtering beyond host/path/method.
       required:
-      - toolId
-      - permission
+      - target
+      - operator
+      - value
       properties:
-        toolId:
-          type: string
-          minLength: 1
-        permission:
+        target:
           type: string
           enum:
-          - allow
-          - manual_approval
-          - block
-          - inherit
-          description: '`inherit` is only valid together with `agentId`: it removes the agent''s override so the tool falls back to the all-agents setting.'
+          - body
+          description: What part of the request to inspect.
+        operator:
+          type: string
+          enum:
+          - contains
+          description: How to match the value against the target.
+        value:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          description: The string to match against.
+        key:
+          type: string
+          maxLength: 500
+          description: Optional JSON key path within the body to scope the match.
+    ErrorFlat:
+      type: object
+      description: Flat error shape used by route-level validation.
+      properties:
+        error:
+          type: string
+      required:
+      - error
   parameters:
     ruleId:
       name: ruleId
